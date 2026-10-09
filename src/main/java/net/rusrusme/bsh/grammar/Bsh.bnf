@@ -146,32 +146,115 @@
   ]
 }
 
+// Root der Datei
 bshFile ::= top_level_item_*
 
-private top_level_item_ ::= preprocessor_directive | function_definition | global_variable_declaration | COMMENT
+// Items auf oberster Ebene
+private top_level_item_ ::= preprocessor_directive | struct_declaration | function_definition | global_variable_declaration | COMMENT
 
+// --- 1. Präprozessor ---
 preprocessor_directive ::=
     DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
-  | DIRECTIVE_INCLUDE | DIRECTIVE_PRAGMA_ONCE | DIRECTIVE_VERSION
-  | DIRECTIVE_DEFINE | DIRECTIVE_IFDEF | DIRECTIVE_IFNDEF | DIRECTIVE_ENDIF
+  | DIRECTIVE_INCLUDE STRING_LITERAL?
+  | DIRECTIVE_PRAGMA_ONCE
+  | DIRECTIVE_VERSION NUMBER? IDENTIFIER?
+  | DIRECTIVE_DEFINE IDENTIFIER expr?
+  | DIRECTIVE_IFDEF IDENTIFIER
+  | DIRECTIVE_IFNDEF IDENTIFIER
+  | DIRECTIVE_ENDIF
 
+// --- 2. Strukturen (Structs) ---
+struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON
+struct_member ::= type IDENTIFIER SEMICOLON
+
+// --- 3. Variablen (Global & Lokal) ---
+// Globale Shader-Variablen wie uniform, in, out, layout(...)
+global_variable_declaration ::= layout_qualifier? variable_modifier? type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON
+private variable_modifier ::= KEYWORD_UNIFORM | KEYWORD_IN | KEYWORD_OUT | KEYWORD_CONST
+
+// Z.B. layout(location = 0)
+layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN
+private layout_params ::= layout_param (COMMA layout_param)*
+layout_param ::= IDENTIFIER (ASSIGN (NUMBER | IDENTIFIER))?
+
+// Lokale Variablen innerhalb von Funktionen
+variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON
+private array_suffix ::= LBRACK NUMBER? RBRACK
+
+// --- 4. Funktionen ---
 function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement
 
 private parameter_list ::= parameter (COMMA parameter)*
-parameter ::= (KEYWORD_IN | KEYWORD_OUT)? type IDENTIFIER
+parameter ::= parameter_modifier? type IDENTIFIER
+private parameter_modifier ::= KEYWORD_IN | KEYWORD_OUT | (KEYWORD_IN KEYWORD_OUT)
 
-global_variable_declaration ::= variable_declaration
-
+// --- 5. Statements & Blöcke ---
 block_statement ::= LBRACE statement* RBRACE
 
-statement ::= variable_declaration | expression_statement | block_statement | COMMENT
+statement ::=
+    block_statement
+  | variable_declaration
+  | expression_statement
+  | if_statement
+  | while_statement
+  | for_statement
+  | return_statement
+  | break_statement
+  | continue_statement
+  | discard_statement
+  | COMMENT
 
-variable_declaration ::= type IDENTIFIER (ASSIGN expr)? SEMICOLON
-expression_statement ::= expr? SEMICOLON
+expression_statement ::= expr SEMICOLON
+if_statement ::= KEYWORD_IF LPAREN expr RPAREN statement (KEYWORD_ELSE statement)?
+while_statement ::= KEYWORD_WHILE LPAREN expr RPAREN statement
+for_statement ::= KEYWORD_FOR LPAREN (variable_declaration | expression_statement) expr? SEMICOLON expr? RPAREN statement
+return_statement ::= KEYWORD_RETURN expr? SEMICOLON
+break_statement ::= KEYWORD_BREAK SEMICOLON
+continue_statement ::= KEYWORD_CONTINUE SEMICOLON
+discard_statement ::= KEYWORD_DISCARD SEMICOLON
 
-expr ::= constructor_or_call | IDENTIFIER | NUMBER | BOOL_TRUE | BOOL_FALSE
+// --- 6. Expressions (Ausdrücke) ---
+// Hier vereinfachen wir die Operator-Hierarchie für den Anfang
+expr ::= assignment_expr
+assignment_expr ::= logic_expr (assignment_op logic_expr)*
+private assignment_op ::= ASSIGN | ADD_ASSIGN | SUB_ASSIGN | MUL_ASSIGN | DIV_ASSIGN
 
+logic_expr ::= math_expr (logic_op math_expr)*
+private logic_op ::= AND | OR | EQ | NEQ | LT | GT | LE | GE
+
+math_expr ::= primary_expr (math_op primary_expr)*
+private math_op ::= PLUS | MINUS | MUL | DIV | MOD
+
+primary_expr ::=
+    constructor_or_call
+  | member_access
+  | array_access
+  | IDENTIFIER
+  | NUMBER
+  | BOOL_TRUE
+  | BOOL_FALSE
+  | LPAREN expr RPAREN
+
+// Funktionsaufrufe und Konstruktoren, z.B. vec4(1.0), dot(a, b)
 constructor_or_call ::= (IDENTIFIER | type) LPAREN argument_list? RPAREN
 private argument_list ::= expr (COMMA expr)*
 
-type ::= TYPE_VOID | TYPE_VEC2 | TYPE_VEC3 | TYPE_VEC4 | TYPE_FLOAT | TYPE_INT | TYPE_BOOL | TYPE_MAT3 | TYPE_MAT4 | TYPE_SAMPLER2D
+// Zugriff auf Struct-Members oder Vektoren, z.B. color.rgb
+member_access ::= IDENTIFIER (DOT IDENTIFIER)+
+
+// Array Zugriff, z.B. lights[0]
+array_access ::= IDENTIFIER LBRACK expr RBRACK
+
+// --- 7. Typen ---
+type ::= TYPE_VOID | TYPE_FLOAT | TYPE_INT | TYPE_UINT | TYPE_BOOL | TYPE_DOUBLE
+       | TYPE_VEC2 | TYPE_VEC3 | TYPE_VEC4
+       | TYPE_IVEC2 | TYPE_IVEC3 | TYPE_IVEC4
+       | TYPE_UVEC2 | TYPE_UVEC3 | TYPE_UVEC4
+       | TYPE_BVEC2 | TYPE_BVEC3 | TYPE_BVEC4
+       | TYPE_DVEC2 | TYPE_DVEC3 | TYPE_DVEC4
+       | TYPE_MAT2 | TYPE_MAT3 | TYPE_MAT4
+       | TYPE_DMAT2 | TYPE_DMAT3 | TYPE_DMAT4
+       | TYPE_SAMPLER1D | TYPE_SAMPLER2D | TYPE_SAMPLER3D | TYPE_SAMPLERCUBE
+       | TYPE_SAMPLER2DARRAY | TYPE_SAMPLER2DSHADOW | TYPE_ISAMPLER2D | TYPE_USAMPLER2D
+       | TYPE_IMAGE2D
+       | IDENTIFIER // Für Custom Struct Types

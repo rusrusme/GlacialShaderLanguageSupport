@@ -1,9 +1,9 @@
 package net.rusrusme.bsh.lexer;
 
 import com.intellij.lexer.FlexLexer;
+import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import net.rusrusme.bsh.psi.BshTypes;
-import com.intellij.psi.TokenType;
 
 %%
 
@@ -21,6 +21,7 @@ LINE_COMMENT="//"[^\r\n]*
 BLOCK_COMMENT="/"\*([^*]|\*+[^/*])*\*+"/"
 IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_]*
 NUMBER=[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?[fF]?
+STRING_LITERAL=\"[^\"]*\"
 
 %%
 
@@ -28,6 +29,7 @@ NUMBER=[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?[fF]?
   {WHITE_SPACE}         { return TokenType.WHITE_SPACE; }
   {LINE_COMMENT}        { return BshTypes.COMMENT; }
   {BLOCK_COMMENT}       { return BshTypes.COMMENT; }
+  {STRING_LITERAL}      { return BshTypes.STRING_LITERAL; }
 
   /* Directives */
   "#vert"               { return BshTypes.DIRECTIVE_VERT; }
