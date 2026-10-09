@@ -1,0 +1,160 @@
+{
+  parserClass="net.rusrusme.bsh.parser.BshParser"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Bsh"
+  psiImplClassSuffix="Impl"
+  psiPackage="net.rusrusme.bsh.psi"
+  psiImplPackage="net.rusrusme.bsh.psi.impl"
+
+  elementTypeHolderClass="net.rusrusme.bsh.psi.BshTypes"
+  elementTypeClass="net.rusrusme.bsh.psi.BshElementType"
+  tokenTypeClass="net.rusrusme.bsh.psi.BshTokenType"
+
+  tokens=[
+    // Directives
+    DIRECTIVE_COMP="#comp"
+    DIRECTIVE_DEFINE="#define"
+    DIRECTIVE_ENDIF="#endif"
+    DIRECTIVE_FRAG="#frag"
+    DIRECTIVE_GEOM="#geom"
+    DIRECTIVE_IFDEF="#ifdef"
+    DIRECTIVE_IFNDEF="#ifndef"
+    DIRECTIVE_INCLUDE="#include"
+    DIRECTIVE_PRAGMA_ONCE="#pragma once"
+    DIRECTIVE_VERSION="#version"
+    DIRECTIVE_VERT="#vert"
+
+    // Keywords
+    KEYWORD_BREAK="break"
+    KEYWORD_CASE="case"
+    KEYWORD_CONST="const"
+    KEYWORD_CONTINUE="continue"
+    KEYWORD_DEFAULT="default"
+    KEYWORD_DISCARD="discard"
+    KEYWORD_DO="do"
+    KEYWORD_ELSE="else"
+    KEYWORD_FOR="for"
+    KEYWORD_IF="if"
+    KEYWORD_IN="in"
+    KEYWORD_LAYOUT="layout"
+    KEYWORD_OUT="out"
+    KEYWORD_RETURN="return"
+    KEYWORD_STRUCT="struct"
+    KEYWORD_SWITCH="switch"
+    KEYWORD_UNIFORM="uniform"
+    KEYWORD_WHILE="while"
+
+    // Types
+    TYPE_BOOL="bool"
+    TYPE_BVEC2="bvec2"
+    TYPE_BVEC3="bvec3"
+    TYPE_BVEC4="bvec4"
+    TYPE_DMAT2="dmat2"
+    TYPE_DMAT3="dmat3"
+    TYPE_DMAT4="dmat4"
+    TYPE_DOUBLE="double"
+    TYPE_DVEC2="dvec2"
+    TYPE_DVEC3="dvec3"
+    TYPE_DVEC4="dvec4"
+    TYPE_FLOAT="float"
+    TYPE_IMAGE2D="image2D"
+    TYPE_INT="int"
+    TYPE_ISAMPLER2D="isampler2D"
+    TYPE_IVEC2="ivec2"
+    TYPE_IVEC3="ivec3"
+    TYPE_IVEC4="ivec4"
+    TYPE_MAT2="mat2"
+    TYPE_MAT3="mat3"
+    TYPE_MAT4="mat4"
+    TYPE_SAMPLER1D="sampler1D"
+    TYPE_SAMPLER2D="sampler2D"
+    TYPE_SAMPLER2DARRAY="sampler2DArray"
+    TYPE_SAMPLER2DSHADOW="sampler2DShadow"
+    TYPE_SAMPLER3D="sampler3D"
+    TYPE_SAMPLERCUBE="samplerCube"
+    TYPE_UINT="uint"
+    TYPE_USAMPLER2D="usampler2D"
+    TYPE_UVEC2="uvec2"
+    TYPE_UVEC3="uvec3"
+    TYPE_UVEC4="uvec4"
+    TYPE_VEC2="vec2"
+    TYPE_VEC3="vec3"
+    TYPE_VEC4="vec4"
+    TYPE_VOID="void"
+
+    // Literals
+    BOOL_TRUE="true"
+    BOOL_FALSE="false"
+
+    // Operators - Comparison
+    EQ="=="
+    NEQ="!="
+    LE="<="
+    GE=">="
+    LT="<"
+    GT=">"
+
+    // Operators - Logical
+    AND="&&"
+    OR="||"
+    NOT="!"
+
+    // Operators - Bitwise & Shift
+    BIT_AND="&"
+    BIT_OR="|"
+    BIT_XOR="^"
+    BIT_NOT="~"
+    SHL="<<"
+    SHR=">>"
+
+    // Operators - Arithmetic
+    PLUS="+"
+    MINUS="-"
+    MUL="*"
+    DIV="/"
+    MOD="%"
+    INC="++"
+    DEC="--"
+
+    // Operators - Assignment
+    ASSIGN="="
+    ADD_ASSIGN="+="
+    SUB_ASSIGN="-="
+    MUL_ASSIGN="*="
+    DIV_ASSIGN="/="
+    MOD_ASSIGN="%="
+    SHL_ASSIGN="<<="
+    SHR_ASSIGN=">>="
+    AND_ASSIGN="&="
+    OR_ASSIGN="|="
+    XOR_ASSIGN="^="
+
+    // Punctuation
+    SEMICOLON=";"
+    COMMA=","
+    DOT="."
+    COLON=":"
+    QUESTION="?"
+    LBRACE="{"
+    RBRACE="}"
+    LPAREN="("
+    RPAREN=")"
+    LBRACK="["
+    RBRACK="]"
+  ]
+}
+
+bshFile ::= item_*
+
+private item_ ::= preprocessor_directive | statement | COMMENT
+
+preprocessor_directive ::=
+    "#vert" | "#frag" | "#geom" | "#comp"
+  | "#include" | "#pragma once" | "#version"
+  | "#define" | "#ifdef" | "#ifndef" | "#endif"
+
+statement ::= block_statement | simple_statement
+block_statement ::= "{" item_* "}"
+simple_statement ::= expr? ";"
+expr ::= IDENTIFIER | NUMBER | STRING_LITERAL
