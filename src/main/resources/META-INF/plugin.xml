@@ -1,0 +1,57 @@
+<idea-plugin>
+    <id>net.rusrusme.bsh</id>
+    <name>Basis Shader Language</name>
+    <vendor>Basis</vendor>
+
+    <description>Provides syntax highlighting, formatting, and language support for BSH files.</description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.clion.ide</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- FileType Registration -->
+        <fileType name="Basis Shader File"
+                  implementationClass="net.rusrusme.bsh.BshFileType"
+                  fieldName="INSTANCE"
+                  language="BasisShader"
+                  extensions="bsh"/>
+
+        <!-- File Template Registration -->
+        <internalFileTemplate name="Basis Shader File"/>
+
+        <!-- Parser & Lexer -->
+        <lang.parserDefinition language="BasisShader"
+                               implementationClass="net.rusrusme.bsh.BshParserDefinition"/>
+
+        <!-- Syntax Highlighting -->
+        <lang.syntaxHighlighterFactory language="BasisShader"
+                                       implementationClass="net.rusrusme.bsh.BshSyntaxHighlighterFactory"/>
+
+        <!-- Commenter (Ctrl + /) -->
+        <lang.commenter language="BasisShader"
+                        implementationClass="net.rusrusme.bsh.BshCommenter"/>
+
+        <!-- Brace Matching & Auto-Indent -->
+        <lang.braceMatcher language="BasisShader"
+                           implementationClass="net.rusrusme.bsh.BshPairedBraceMatcher"/>
+
+        <!-- Code Completion (IntelliSense) -->
+        <completion.contributor language="BasisShader"
+                                implementationClass="net.rusrusme.bsh.BshCompletionContributor"/>
+
+        <!-- Formatter & Indent Settings -->
+        <lang.formatter language="BasisShader"
+                        implementationClass="net.rusrusme.bsh.BshFormattingModelBuilder" />
+
+        <codeStyleSettingsProvider implementation="net.rusrusme.bsh.BshLanguageCodeStyleSettingsProvider" />
+    </extensions>
+
+    <actions>
+        <action id="net.rusrusme.bsh.NewFile"
+                class="net.rusrusme.bsh.BshCreateFileAction"
+                text="Basis Shader File"
+                description="Create new Basis Shader file">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
+        </action>
+    </actions>
+</idea-plugin>
