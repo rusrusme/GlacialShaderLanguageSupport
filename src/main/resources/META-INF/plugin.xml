@@ -20,5 +20,17 @@
         <lang.syntaxHighlighterFactory
                 language="BasisShader"
                 implementationClass="net.rusrusme.bsh.highlight.BshSyntaxHighlighterFactory"/>
+
+        <lang.braceMatcher
+                language="BasisShader"
+                implementationClass="net.rusrusme.bsh.core.BshBraceMatcher"/>
+
+        <lang.formatter
+                language="BasisShader"
+                implementationClass="net.rusrusme.bsh.formatting.BshFormattingModelBuilder"/>
+
+        <completion.contributor
+                language="BasisShader"
+                implementationClass="net.rusrusme.bsh.core.BshCompletionContributor"/>
     </extensions>
 </idea-plugin>

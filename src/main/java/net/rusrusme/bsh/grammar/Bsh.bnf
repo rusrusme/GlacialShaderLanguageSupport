@@ -182,7 +182,7 @@ variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON
 private array_suffix ::= LBRACK NUMBER? RBRACK
 
 // --- 4. Funktionen ---
-function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement
+function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement?
 
 private parameter_list ::= parameter (COMMA parameter)*
 parameter ::= parameter_modifier? type IDENTIFIER
@@ -205,9 +205,9 @@ statement ::=
   | COMMENT
 
 expression_statement ::= expr SEMICOLON
-if_statement ::= KEYWORD_IF LPAREN expr RPAREN statement (KEYWORD_ELSE statement)?
-while_statement ::= KEYWORD_WHILE LPAREN expr RPAREN statement
-for_statement ::= KEYWORD_FOR LPAREN (variable_declaration | expression_statement) expr? SEMICOLON expr? RPAREN statement
+if_statement ::= KEYWORD_IF LPAREN expr? RPAREN statement? (KEYWORD_ELSE statement?)?
+while_statement ::= KEYWORD_WHILE LPAREN expr? RPAREN statement?
+for_statement ::= KEYWORD_FOR LPAREN (variable_declaration | expression_statement)? expr? SEMICOLON expr? RPAREN statement?
 return_statement ::= KEYWORD_RETURN expr? SEMICOLON
 break_statement ::= KEYWORD_BREAK SEMICOLON
 continue_statement ::= KEYWORD_CONTINUE SEMICOLON
