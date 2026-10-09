@@ -4,6 +4,7 @@
 
   psiClassPrefix="Bsh"
   psiImplClassSuffix="Impl"
+
   psiPackage="net.rusrusme.bsh.psi"
   psiImplPackage="net.rusrusme.bsh.psi.impl"
 
@@ -145,16 +146,32 @@
   ]
 }
 
-bshFile ::= item_*
+bshFile ::= top_level_item_*
 
-private item_ ::= preprocessor_directive | statement | COMMENT
+private top_level_item_ ::= preprocessor_directive | function_definition | global_variable_declaration | COMMENT
 
 preprocessor_directive ::=
-    "#vert" | "#frag" | "#geom" | "#comp"
-  | "#include" | "#pragma once" | "#version"
-  | "#define" | "#ifdef" | "#ifndef" | "#endif"
+    DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
+  | DIRECTIVE_INCLUDE | DIRECTIVE_PRAGMA_ONCE | DIRECTIVE_VERSION
+  | DIRECTIVE_DEFINE | DIRECTIVE_IFDEF | DIRECTIVE_IFNDEF | DIRECTIVE_ENDIF
 
-statement ::= block_statement | simple_statement
-block_statement ::= "{" item_* "}"
-simple_statement ::= expr? ";"
-expr ::= IDENTIFIER | NUMBER | STRING_LITERAL
+function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement
+
+private parameter_list ::= parameter (COMMA parameter)*
+parameter ::= (KEYWORD_IN | KEYWORD_OUT)? type IDENTIFIER
+
+global_variable_declaration ::= variable_declaration
+
+block_statement ::= LBRACE statement* RBRACE
+
+statement ::= variable_declaration | expression_statement | block_statement | COMMENT
+
+variable_declaration ::= type IDENTIFIER (ASSIGN expr)? SEMICOLON
+expression_statement ::= expr? SEMICOLON
+
+expr ::= constructor_or_call | IDENTIFIER | NUMBER | BOOL_TRUE | BOOL_FALSE
+
+constructor_or_call ::= (IDENTIFIER | type) LPAREN argument_list? RPAREN
+private argument_list ::= expr (COMMA expr)*
+
+type ::= TYPE_VOID | TYPE_VEC2 | TYPE_VEC3 | TYPE_VEC4 | TYPE_FLOAT | TYPE_INT | TYPE_BOOL | TYPE_MAT3 | TYPE_MAT4 | TYPE_SAMPLER2D
