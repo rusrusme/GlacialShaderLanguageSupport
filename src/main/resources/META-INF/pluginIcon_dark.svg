@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+    <defs>
+        <linearGradient id="bshGradient" x1="2" y1="2" x2="14" y2="14" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#3574F0"/>
+            <stop offset="100%" stop-color="#9B51E0"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Outer Shader Cube Contour -->
+    <path d="M8 1.5 L14 5 V11 L8 14.5 L2 11 V5 Z" fill="url(#bshGradient)"/>
+
+    <!-- Top Face Overlay -->
+    <path d="M8 1.5 L14 5 L8 8.5 L2 5 Z" fill="#FFFFFF" opacity="0.25"/>
+
+    <!-- Right Face Shadow Overlay -->
+    <path d="M8 8.5 L14 5 V11 L8 14.5 Z" fill="#000000" opacity="0.15"/>
+
+    <!-- Inner Core / Vertex Node -->
+    <circle cx="8" cy="8" r="1.75" fill="#FFFFFF"/>
+</svg>
