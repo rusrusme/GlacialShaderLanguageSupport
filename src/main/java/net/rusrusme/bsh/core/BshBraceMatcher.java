@@ -23,7 +23,6 @@ public class BshBraceMatcher implements PairedBraceMatcher {
     @Override
     public boolean isPairedBracesAllowedBeforeType(@NotNull IElementType lbraceType, @Nullable IElementType contextType) {
         return true;
-        
     }
 
     @Override

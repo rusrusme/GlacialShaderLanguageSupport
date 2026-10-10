@@ -37,7 +37,7 @@ STRING_LITERAL=\"[^\"]*\"
   "#geom"               { return BshTypes.DIRECTIVE_GEOM; }
   "#comp"               { return BshTypes.DIRECTIVE_COMP; }
   "#include"            { return BshTypes.DIRECTIVE_INCLUDE; }
-  "#pragma once"        { return BshTypes.DIRECTIVE_PRAGMA_ONCE; }
+  "#pragma"[ \t]+"once" { return BshTypes.DIRECTIVE_PRAGMA_ONCE; }
   "#version"            { return BshTypes.DIRECTIVE_VERSION; }
   "#define"             { return BshTypes.DIRECTIVE_DEFINE; }
   "#ifdef"              { return BshTypes.DIRECTIVE_IFDEF; }
