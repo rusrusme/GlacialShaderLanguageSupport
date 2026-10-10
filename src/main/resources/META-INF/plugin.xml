@@ -32,5 +32,9 @@
         <completion.contributor
                 language="BasisShader"
                 implementationClass="net.rusrusme.bsh.core.BshCompletionContributor"/>
+        
+        <psi.referenceContributor
+                language="BasisShader"
+                implementation="net.rusrusme.bsh.psi.BshReferenceContributor"/>
     </extensions>
 </idea-plugin>

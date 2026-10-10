@@ -10,8 +10,13 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
+import net.rusrusme.bsh.psi.BshPsiUtil;
+import net.rusrusme.bsh.psi.BshVariableDeclaration;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public class BshCompletionContributor extends CompletionContributor {
     public BshCompletionContributor() {
@@ -80,7 +85,7 @@ public class BshCompletionContributor extends CompletionContributor {
                 for (String keyword : statementsWithParens) {
                     LookupElementBuilder element = LookupElementBuilder.create(keyword)
                             .bold()
-                            .withTailText(" ", true)
+                            .withTailText(" ()", true)
                             .withInsertHandler(parensInsertHandler);
                     result.addElement(PrioritizedLookupElement.withPriority(element, 100.0));
                 }
@@ -93,6 +98,23 @@ public class BshCompletionContributor extends CompletionContributor {
                 };
                 for (String keyword : simpleKeywords) {
                     result.addElement(LookupElementBuilder.create(keyword).bold());
+                }
+
+                PsiElement position = parameters.getPosition();
+                List<BshVariableDeclaration> visibleVars = BshPsiUtil.findVisibleVariables(position);
+
+                for (BshVariableDeclaration var : visibleVars) {
+                    if (var.getIdentifier() != null) {
+                        String varName = var.getIdentifier().getText();
+                        String varType = var.getType() != null ? var.getType().getText() : "var";
+
+                        LookupElementBuilder element = LookupElementBuilder.create(varName)
+                                .withTypeText(varType, true) // Displays type on right side (e.g., "vec3")
+                                .withIcon(com.intellij.icons.AllIcons.Nodes.Variable)
+                                .bold();
+
+                        result.addElement(PrioritizedLookupElement.withPriority(element, 150.0));
+                    }
                 }
             }
         });

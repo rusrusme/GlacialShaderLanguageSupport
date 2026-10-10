@@ -22,7 +22,7 @@
     DIRECTIVE_IFDEF="#ifdef"
     DIRECTIVE_IFNDEF="#ifndef"
     DIRECTIVE_INCLUDE="#include"
-    DIRECTIVE_PRAGMA_ONCE="#pragma"
+    DIRECTIVE_PRAGMA="#pragma"
     DIRECTIVE_VERSION="#version"
     DIRECTIVE_VERT="#vert"
     KEYWORD_ONCE="once"
@@ -89,7 +89,9 @@
     BOOL_TRUE="true"
     BOOL_FALSE="false"
 
-    // Operators - Comparison
+    IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+
+    // Operators
     EQ="=="
     NEQ="!="
     LE="<="
@@ -147,13 +149,9 @@
   ]
 }
 
-// Root der Datei
 bshFile ::= top_level_item_*
-
-// Items auf oberster Ebene
 private top_level_item_ ::= preprocessor_directive | struct_declaration | function_definition | global_variable_declaration | COMMENT
 
-// --- 1. Präprozessor ---
 preprocessor_directive ::=
     DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
   | DIRECTIVE_INCLUDE STRING_LITERAL?
@@ -164,33 +162,28 @@ preprocessor_directive ::=
   | DIRECTIVE_IFNDEF IDENTIFIER
   | DIRECTIVE_ENDIF
 
-// --- 2. Strukturen (Structs) ---
-struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON
-struct_member ::= type IDENTIFIER SEMICOLON
+struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON {pin=1}
+struct_member ::= type IDENTIFIER SEMICOLON {pin=2}
 
-// --- 3. Variablen (Global & Lokal) ---
-// Globale Shader-Variablen wie uniform, in, out, layout(...)
-global_variable_declaration ::= layout_qualifier? variable_modifier? type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON
+global_variable_declaration ::= layout_qualifier? variable_modifier? variable_declaration
 private variable_modifier ::= KEYWORD_UNIFORM | KEYWORD_IN | KEYWORD_OUT | KEYWORD_CONST
 
-// Z.B. layout(location = 0)
 layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN
 private layout_params ::= layout_param (COMMA layout_param)*
 layout_param ::= IDENTIFIER (ASSIGN (NUMBER | IDENTIFIER))?
 
-// Lokale Variablen innerhalb von Funktionen
-variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON
+variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON {pin=2}
 private array_suffix ::= LBRACK NUMBER? RBRACK
 
-// --- 4. Funktionen ---
-function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement?
-
+function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement? {pin=2}
 private parameter_list ::= parameter (COMMA parameter)*
 parameter ::= parameter_modifier? type IDENTIFIER
 private parameter_modifier ::= KEYWORD_IN | KEYWORD_OUT | (KEYWORD_IN KEYWORD_OUT)
 
-// --- 5. Statements & Blöcke ---
-block_statement ::= LBRACE statement* RBRACE
+// Blöcke mit Fehler-Erholung (recoverWhile), damit unvollständige Statements den Block nicht zerstören
+block_statement ::= LBRACE statement_* RBRACE {pin=1}
+private statement_ ::= statement {recoverWhile=statement_recover}
+private statement_recover ::= !(RBRACE | SEMICOLON | type | KEYWORD_IF | KEYWORD_WHILE | KEYWORD_FOR | KEYWORD_RETURN | KEYWORD_BREAK | KEYWORD_CONTINUE | KEYWORD_DISCARD)
 
 statement ::=
     block_statement
@@ -205,17 +198,15 @@ statement ::=
   | discard_statement
   | COMMENT
 
-expression_statement ::= expr SEMICOLON
-if_statement ::= KEYWORD_IF LPAREN expr? RPAREN statement? (KEYWORD_ELSE statement?)?
-while_statement ::= KEYWORD_WHILE LPAREN expr? RPAREN statement?
-for_statement ::= KEYWORD_FOR LPAREN (variable_declaration | expression_statement)? expr? SEMICOLON expr? RPAREN statement?
-return_statement ::= KEYWORD_RETURN expr? SEMICOLON
-break_statement ::= KEYWORD_BREAK SEMICOLON
-continue_statement ::= KEYWORD_CONTINUE SEMICOLON
-discard_statement ::= KEYWORD_DISCARD SEMICOLON
+expression_statement ::= expr SEMICOLON {pin=1}
+if_statement ::= KEYWORD_IF LPAREN expr? RPAREN statement? (KEYWORD_ELSE statement?)? {pin=1}
+while_statement ::= KEYWORD_WHILE LPAREN expr? RPAREN statement? {pin=1}
+for_statement ::= KEYWORD_FOR LPAREN (variable_declaration | expression_statement)? expr? SEMICOLON expr? RPAREN statement? {pin=1}
+return_statement ::= KEYWORD_RETURN expr? SEMICOLON {pin=1}
+break_statement ::= KEYWORD_BREAK SEMICOLON {pin=1}
+continue_statement ::= KEYWORD_CONTINUE SEMICOLON {pin=1}
+discard_statement ::= KEYWORD_DISCARD SEMICOLON {pin=1}
 
-// --- 6. Expressions (Ausdrücke) ---
-// Hier vereinfachen wir die Operator-Hierarchie für den Anfang
 expr ::= assignment_expr
 assignment_expr ::= logic_expr (assignment_op logic_expr)*
 private assignment_op ::= ASSIGN | ADD_ASSIGN | SUB_ASSIGN | MUL_ASSIGN | DIV_ASSIGN
@@ -236,17 +227,11 @@ primary_expr ::=
   | BOOL_FALSE
   | LPAREN expr RPAREN
 
-// Funktionsaufrufe und Konstruktoren, z.B. vec4(1.0), dot(a, b)
-constructor_or_call ::= (IDENTIFIER | type) LPAREN argument_list? RPAREN
+constructor_or_call ::= (IDENTIFIER | type) LPAREN argument_list? RPAREN {pin=2}
 private argument_list ::= expr (COMMA expr)*
-
-// Zugriff auf Struct-Members oder Vektoren, z.B. color.rgb
 member_access ::= IDENTIFIER (DOT IDENTIFIER)+
-
-// Array Zugriff, z.B. lights[0]
 array_access ::= IDENTIFIER LBRACK expr RBRACK
 
-// --- 7. Typen ---
 type ::= TYPE_VOID | TYPE_FLOAT | TYPE_INT | TYPE_UINT | TYPE_BOOL | TYPE_DOUBLE
        | TYPE_VEC2 | TYPE_VEC3 | TYPE_VEC4
        | TYPE_IVEC2 | TYPE_IVEC3 | TYPE_IVEC4
@@ -258,4 +243,4 @@ type ::= TYPE_VOID | TYPE_FLOAT | TYPE_INT | TYPE_UINT | TYPE_BOOL | TYPE_DOUBLE
        | TYPE_SAMPLER1D | TYPE_SAMPLER2D | TYPE_SAMPLER3D | TYPE_SAMPLERCUBE
        | TYPE_SAMPLER2DARRAY | TYPE_SAMPLER2DSHADOW | TYPE_ISAMPLER2D | TYPE_USAMPLER2D
        | TYPE_IMAGE2D
-       | IDENTIFIER // Für Custom Struct Types
+       | IDENTIFIER
