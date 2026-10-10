@@ -88,7 +88,6 @@
     // Literals
     BOOL_TRUE="true"
     BOOL_FALSE="false"
-
     IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
 
     // Operators
@@ -98,8 +97,6 @@
     GE=">="
     LT="<"
     GT=">"
-
-    // Operators - Logical
     AND="&&"
     OR="||"
     NOT="!"
@@ -180,7 +177,6 @@ private parameter_list ::= parameter (COMMA parameter)*
 parameter ::= parameter_modifier? type IDENTIFIER
 private parameter_modifier ::= KEYWORD_IN | KEYWORD_OUT | (KEYWORD_IN KEYWORD_OUT)
 
-// Blöcke mit Fehler-Erholung (recoverWhile), damit unvollständige Statements den Block nicht zerstören
 block_statement ::= LBRACE statement_* RBRACE {pin=1}
 private statement_ ::= statement {recoverWhile=statement_recover}
 private statement_recover ::= !(RBRACE | SEMICOLON | type | KEYWORD_IF | KEYWORD_WHILE | KEYWORD_FOR | KEYWORD_RETURN | KEYWORD_BREAK | KEYWORD_CONTINUE | KEYWORD_DISCARD)
@@ -207,15 +203,39 @@ break_statement ::= KEYWORD_BREAK SEMICOLON {pin=1}
 continue_statement ::= KEYWORD_CONTINUE SEMICOLON {pin=1}
 discard_statement ::= KEYWORD_DISCARD SEMICOLON {pin=1}
 
-expr ::= assignment_expr
-assignment_expr ::= logic_expr (assignment_op logic_expr)*
-private assignment_op ::= ASSIGN | ADD_ASSIGN | SUB_ASSIGN | MUL_ASSIGN | DIV_ASSIGN
+// --- Expression Hierarchy ---
+expr ::= conditional_expr
 
-logic_expr ::= math_expr (logic_op math_expr)*
-private logic_op ::= AND | OR | EQ | NEQ | LT | GT | LE | GE
+conditional_expr ::= assignment_expr (QUESTION expr COLON assignment_expr)?
 
-math_expr ::= primary_expr (math_op primary_expr)*
-private math_op ::= PLUS | MINUS | MUL | DIV | MOD
+assignment_expr ::= logic_or_expr (assignment_op logic_or_expr)*
+private assignment_op ::= ASSIGN | ADD_ASSIGN | SUB_ASSIGN | MUL_ASSIGN | DIV_ASSIGN | MOD_ASSIGN | SHL_ASSIGN | SHR_ASSIGN | AND_ASSIGN | OR_ASSIGN | XOR_ASSIGN
+
+logic_or_expr ::= logic_and_expr (OR logic_and_expr)*
+logic_and_expr ::= bit_or_expr (AND bit_or_expr)*
+
+bit_or_expr ::= bit_xor_expr (BIT_OR bit_xor_expr)*
+bit_xor_expr ::= bit_and_expr (BIT_XOR bit_and_expr)*
+bit_and_expr ::= equality_expr (BIT_AND equality_expr)*
+
+equality_expr ::= relational_expr (eq_op relational_expr)*
+private eq_op ::= EQ | NEQ
+
+relational_expr ::= shift_expr (rel_op shift_expr)*
+private rel_op ::= LT | GT | LE | GE
+
+shift_expr ::= additive_expr (shift_op additive_expr)*
+private shift_op ::= SHL | SHR
+
+additive_expr ::= multiplicative_expr (add_op multiplicative_expr)*
+private add_op ::= PLUS | MINUS
+
+multiplicative_expr ::= unary_expr (mul_op unary_expr)*
+private mul_op ::= MUL | DIV | MOD
+
+unary_expr ::= (prefix_op)* primary_expr (postfix_op)*
+private prefix_op ::= INC | DEC | PLUS | MINUS | NOT | BIT_NOT
+private postfix_op ::= INC | DEC
 
 primary_expr ::=
     constructor_or_call
