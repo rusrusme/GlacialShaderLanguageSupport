@@ -22,9 +22,10 @@
     DIRECTIVE_IFDEF="#ifdef"
     DIRECTIVE_IFNDEF="#ifndef"
     DIRECTIVE_INCLUDE="#include"
-    DIRECTIVE_PRAGMA_ONCE="#pragma once"
+    DIRECTIVE_PRAGMA_ONCE="#pragma"
     DIRECTIVE_VERSION="#version"
     DIRECTIVE_VERT="#vert"
+    KEYWORD_ONCE="once"
 
     // Keywords
     KEYWORD_BREAK="break"
@@ -156,7 +157,7 @@ private top_level_item_ ::= preprocessor_directive | struct_declaration | functi
 preprocessor_directive ::=
     DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
   | DIRECTIVE_INCLUDE STRING_LITERAL?
-  | DIRECTIVE_PRAGMA_ONCE
+  | DIRECTIVE_PRAGMA KEYWORD_ONCE?
   | DIRECTIVE_VERSION NUMBER? IDENTIFIER?
   | DIRECTIVE_DEFINE IDENTIFIER expr?
   | DIRECTIVE_IFDEF IDENTIFIER

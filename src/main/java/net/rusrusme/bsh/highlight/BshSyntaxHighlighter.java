@@ -30,8 +30,8 @@ public class BshSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TokenSet DIRECTIVES = TokenSet.create(
             BshTypes.DIRECTIVE_COMP, BshTypes.DIRECTIVE_DEFINE, BshTypes.DIRECTIVE_ENDIF,
             BshTypes.DIRECTIVE_FRAG, BshTypes.DIRECTIVE_GEOM, BshTypes.DIRECTIVE_IFDEF,
-            BshTypes.DIRECTIVE_IFNDEF, BshTypes.DIRECTIVE_INCLUDE, BshTypes.DIRECTIVE_PRAGMA_ONCE,
-            BshTypes.DIRECTIVE_VERSION, BshTypes.DIRECTIVE_VERT
+            BshTypes.DIRECTIVE_IFNDEF, BshTypes.DIRECTIVE_INCLUDE, BshTypes.DIRECTIVE_PRAGMA,
+            BshTypes.KEYWORD_ONCE, BshTypes.DIRECTIVE_VERSION, BshTypes.DIRECTIVE_VERT
     );
 
     private static final TokenSet KEYWORDS = TokenSet.create(

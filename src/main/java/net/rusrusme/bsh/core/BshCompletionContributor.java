@@ -2,6 +2,7 @@ package net.rusrusme.bsh.core;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
@@ -19,9 +20,52 @@ public class BshCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
+            protected void addCompletions(@NotNull CompletionParameters parameters,
+                                          @NotNull ProcessingContext context,
+                                          @NotNull CompletionResultSet result) {
 
-                // Keywords MIT Klammer-Generierung
+                int offset = parameters.getOffset();
+                Document document = parameters.getEditor().getDocument();
+                CharSequence text = document.getCharsSequence();
+
+                int start = offset;
+                while (start > 0) {
+                    char c = text.charAt(start - 1);
+                    if (Character.isJavaIdentifierPart(c) || c == '#') {
+                        start--;
+                        if (c == '#') break;
+                    } else {
+                        break;
+                    }
+                }
+
+                String prefix = text.subSequence(start, offset).toString();
+
+                String[] directives = {
+                        "#frag", "#vert", "#geom", "#comp",
+                        "#pragma once", "#include", "#version",
+                        "#define", "#ifdef", "#ifndef", "#endif"
+                };
+
+                if (prefix.startsWith("#")) {
+                    CompletionResultSet directiveResult = result.withPrefixMatcher(prefix);
+                    for (String directive : directives) {
+                        LookupElementBuilder element = LookupElementBuilder.create(directive)
+                                .bold()
+                                .withPresentableText(directive);
+                        directiveResult.addElement(PrioritizedLookupElement.withPriority(element, 200.0));
+                    }
+                    return;
+                }
+
+                for (String directive : directives) {
+                    LookupElementBuilder element = LookupElementBuilder.create(directive)
+                            .bold()
+                            .withLookupString(directive.substring(1))
+                            .withPresentableText(directive);
+                    result.addElement(PrioritizedLookupElement.withPriority(element, 50.0));
+                }
+
                 String[] statementsWithParens = {"if", "while", "for", "switch"};
                 for (String keyword : statementsWithParens) {
                     LookupElementBuilder element = LookupElementBuilder.create(keyword)
@@ -31,8 +75,12 @@ public class BshCompletionContributor extends CompletionContributor {
                     result.addElement(PrioritizedLookupElement.withPriority(element, 100.0));
                 }
 
-                // Keywords OHNE Klammer-Generierung
-                String[] simpleKeywords = {"else", "do", "return", "break", "continue", "discard", "void", "vec2", "vec3", "vec4", "mat3", "mat4", "float", "int"};
+                String[] simpleKeywords = {
+                        "else", "do", "return", "break", "continue", "discard", "layout", "uniform", "in", "out",
+                        "void", "float", "int", "uint", "bool", "double", "once",
+                        "vec2", "vec3", "vec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4", "bvec2", "bvec3", "bvec4",
+                        "mat2", "mat3", "mat4", "sampler2D", "samplerCube", "image2D"
+                };
                 for (String keyword : simpleKeywords) {
                     result.addElement(LookupElementBuilder.create(keyword).bold());
                 }
