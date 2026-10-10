@@ -12,7 +12,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Custom Formatting Block for Basis Shader Language (BSH).
+ */
 public class BshBlock extends AbstractBlock {
+
     private final SpacingBuilder spacingBuilder;
 
     protected BshBlock(@NotNull ASTNode node, @Nullable Wrap wrap, @Nullable Alignment alignment, SpacingBuilder spacingBuilder) {
@@ -24,6 +28,7 @@ public class BshBlock extends AbstractBlock {
     protected List<Block> buildChildren() {
         List<Block> blocks = new ArrayList<>();
         ASTNode child = myNode.getFirstChildNode();
+
         while (child != null) {
             if (child.getElementType() != TokenType.WHITE_SPACE) {
                 // Pass null for Alignment to prevent column-relative drifting
@@ -38,12 +43,8 @@ public class BshBlock extends AbstractBlock {
     public @NotNull ChildAttributes getChildAttributes(int newChildIndex) {
         IElementType type = myNode.getElementType();
 
-        if (type == BshTypes.BLOCK_STATEMENT ||
-                type == BshTypes.STRUCT_DECLARATION ||
-                type == BshTypes.IF_STATEMENT ||
-                type == BshTypes.WHILE_STATEMENT ||
-                type == BshTypes.FOR_STATEMENT ||
-                type == BshTypes.FUNCTION_DEFINITION) {
+        // Defines indent for new lines created by pressing Enter inside these blocks
+        if (type == BshTypes.BLOCK_STATEMENT || type == BshTypes.STRUCT_DECLARATION || type == BshTypes.IF_STATEMENT || type == BshTypes.WHILE_STATEMENT || type == BshTypes.FOR_STATEMENT || type == BshTypes.FUNCTION_DEFINITION) {
 
             return new ChildAttributes(Indent.getNormalIndent(), null);
         }
@@ -61,13 +62,22 @@ public class BshBlock extends AbstractBlock {
         IElementType elementType = myNode.getElementType();
         IElementType parentType = parentNode.getElementType();
 
-        // Apply normal indent to elements inside {...} blocks and struct bodies
-        if (parentType == BshTypes.BLOCK_STATEMENT || parentType == BshTypes.STRUCT_DECLARATION) {
+        // 1. Code-Blöcke innerhalb von Anweisungen ({ ... })
+        if (parentType == BshTypes.BLOCK_STATEMENT) {
             if (elementType == BshTypes.LBRACE || elementType == BshTypes.RBRACE) {
                 return Indent.getNoneIndent();
             }
             return Indent.getNormalIndent();
         }
+
+        // 2. Struct-Deklarationen & Interface-Blöcke (Uniform/SSBO)
+        if (parentType == BshTypes.STRUCT_DECLARATION || parentType == BshTypes.INTERFACE_BLOCK) {
+            if (elementType == BshTypes.STRUCT_MEMBER || elementType == BshTypes.VARIABLE_DECLARATION) {
+                return Indent.getNormalIndent();
+            }
+            return Indent.getNoneIndent();
+        }
+
         return Indent.getNoneIndent();
     }
 
