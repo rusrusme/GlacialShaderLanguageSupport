@@ -165,7 +165,7 @@ struct_member ::= type IDENTIFIER SEMICOLON {pin=2}
 global_variable_declaration ::= layout_qualifier? variable_modifier? variable_declaration
 private variable_modifier ::= KEYWORD_UNIFORM | KEYWORD_IN | KEYWORD_OUT | KEYWORD_CONST
 
-layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN
+layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN {pin=1}
 private layout_params ::= layout_param (COMMA layout_param)*
 layout_param ::= IDENTIFIER (ASSIGN (NUMBER | IDENTIFIER))?
 

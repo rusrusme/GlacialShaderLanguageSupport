@@ -11,7 +11,9 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import net.rusrusme.bsh.psi.BshLayoutQualifier;
 import net.rusrusme.bsh.psi.BshPsiUtil;
 import net.rusrusme.bsh.psi.BshVariableDeclaration;
 import org.jetbrains.annotations.NotNull;
@@ -24,12 +26,10 @@ public class BshCompletionContributor extends CompletionContributor {
             Editor editor = context.getEditor();
             Project project = context.getProject();
 
-            // Create a Live Template session for " ($EXPR$) $END$"
             TemplateManager templateManager = TemplateManager.getInstance(project);
             Template template = templateManager.createTemplate("", "", " ($EXPR$)$END$");
             template.addVariable("EXPR", new ConstantNode(""), true);
 
-            // Start the template session
             templateManager.startTemplate(editor, template);
         };
 
@@ -42,6 +42,17 @@ public class BshCompletionContributor extends CompletionContributor {
                 int offset = parameters.getOffset();
                 Document document = parameters.getEditor().getDocument();
                 CharSequence text = document.getCharsSequence();
+                PsiElement position = parameters.getPosition();
+
+                if (offset > 0 && text.charAt(offset - 1) == '.') {
+                    addVectorAndMatrixMembers(result);
+                    return; // Prevent suggesting keywords when typing after '.'
+                }
+
+                if (isInsideLayout(position, text, offset)) {
+                    addLayoutParamCompletions(result);
+                    return; // Verhindert Schlüsselwort-Salat innerhalb von layout(...)
+                }
 
                 int start = offset;
                 while (start > 0) {
@@ -90,17 +101,24 @@ public class BshCompletionContributor extends CompletionContributor {
                     result.addElement(PrioritizedLookupElement.withPriority(element, 100.0));
                 }
 
+                // Standard Built-in Functions & Keywords
                 String[] simpleKeywords = {
                         "else", "do", "return", "break", "continue", "discard", "layout", "uniform", "in", "out",
                         "void", "float", "int", "uint", "bool", "double", "once",
                         "vec2", "vec3", "vec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4", "bvec2", "bvec3", "bvec4",
-                        "mat2", "mat3", "mat4", "sampler2D", "samplerCube", "image2D"
+                        "mat2", "mat3", "mat4", "sampler2D", "samplerCube", "image2D",
+                        // GLSL Built-in Functions
+                        "radians", "degrees", "sin", "cos", "tan", "asin", "acos", "atan",
+                        "pow", "exp", "log", "exp2", "log2", "sqrt", "inversesqrt",
+                        "abs", "sign", "floor", "trunc", "round", "ceil", "fract", "mod", "min", "max", "clamp", "mix", "step", "smoothstep",
+                        "length", "distance", "dot", "cross", "normalize", "faceforward", "reflect", "refract",
+                        "matrixCompMult", "transpose", "determinant", "inverse",
+                        "texture", "textureLod", "texelFetch", "textureSize"
                 };
                 for (String keyword : simpleKeywords) {
                     result.addElement(LookupElementBuilder.create(keyword).bold());
                 }
 
-                PsiElement position = parameters.getPosition();
                 List<BshVariableDeclaration> visibleVars = BshPsiUtil.findVisibleVariables(position);
 
                 for (BshVariableDeclaration var : visibleVars) {
@@ -109,12 +127,63 @@ public class BshCompletionContributor extends CompletionContributor {
                         String varType = var.getType() != null ? var.getType().getText() : "var";
 
                         LookupElementBuilder element = LookupElementBuilder.create(varName)
-                                .withTypeText(varType, true) // Displays type on right side (e.g., "vec3")
+                                .withTypeText(varType, true)
                                 .withIcon(com.intellij.icons.AllIcons.Nodes.Variable)
                                 .bold();
 
                         result.addElement(PrioritizedLookupElement.withPriority(element, 150.0));
                     }
+                }
+            }
+
+            private boolean isInsideLayout(PsiElement position, CharSequence text, int offset) {
+                if (PsiTreeUtil.getParentOfType(position, BshLayoutQualifier.class) != null) {
+                    return true;
+                }
+                // Text-Fallback für unvollständigen Code während des Tippens
+                int lineStart = Math.max(0, offset - 100);
+                String beforeCaret = text.subSequence(lineStart, offset).toString();
+                int lastLayout = beforeCaret.lastIndexOf("layout");
+                if (lastLayout != -1) {
+                    String afterLayout = beforeCaret.substring(lastLayout);
+                    return afterLayout.contains("(") && !afterLayout.contains(")");
+                }
+                return false;
+            }
+
+            private void addLayoutParamCompletions(CompletionResultSet result) {
+                String[] params = {
+                        "binding = ", "location = ",
+                        "local_size_x = ", "local_size_y = ", "local_size_z = ",
+                        "std140", "std430", "push_constant"
+                };
+                for (String param : params) {
+                    LookupElementBuilder element = LookupElementBuilder.create(param)
+                            .bold()
+                            .withIcon(com.intellij.icons.AllIcons.Nodes.Property);
+                    result.addElement(PrioritizedLookupElement.withPriority(element, 300.0));
+                }
+            }
+
+            private void addVectorAndMatrixMembers(CompletionResultSet result) {
+                // Vector Member Methods
+                result.addElement(LookupElementBuilder.create("length()")
+                        .withTypeText("int")
+                        .bold());
+
+                // Common Vector Swizzles
+                String[] swizzles = {
+                        "x", "y", "z", "w",
+                        "r", "g", "b", "a",
+                        "s", "t", "p", "q",
+                        "xy", "xyz", "xyzw",
+                        "rgb", "rgba",
+                        "st", "stp"
+                };
+                for (String s : swizzles) {
+                    result.addElement(LookupElementBuilder.create(s)
+                            .withTypeText("float")
+                            .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
                 }
             }
         });
