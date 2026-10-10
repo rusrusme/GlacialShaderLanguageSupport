@@ -1,5 +1,5 @@
 {
-  parserClass="net.rusrusme.bsh.parser.BshParser"
+parserClass="net.rusrusme.bsh.parser.BshParser"
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
   psiClassPrefix="Bsh"
@@ -160,7 +160,11 @@ preprocessor_directive ::=
   | DIRECTIVE_IFNDEF IDENTIFIER
   | DIRECTIVE_ENDIF
 
-struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON {pin=1}
+struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON {
+  pin=1
+  mixin="net.rusrusme.bsh.psi.impl.BshNamedElementImpl"
+  implements="com.intellij.psi.PsiNameIdentifierOwner"
+}
 struct_member ::= type IDENTIFIER SEMICOLON {pin=2}
 
 global_variable_declaration ::= layout_qualifier? variable_modifier? variable_declaration
@@ -170,7 +174,11 @@ layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN {pin=1}
 private layout_params ::= layout_param (COMMA layout_param)*
 layout_param ::= IDENTIFIER (ASSIGN (NUMBER | IDENTIFIER))?
 
-variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON {pin=2}
+variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON {
+  pin=2
+  mixin="net.rusrusme.bsh.psi.impl.BshNamedElementImpl"
+  implements="com.intellij.psi.PsiNameIdentifierOwner"
+}
 private array_suffix ::= LBRACK NUMBER? RBRACK
 
 interface_block ::= layout_qualifier? interface_qualifier IDENTIFIER LBRACE struct_member* RBRACE IDENTIFIER? SEMICOLON? {pin=3}

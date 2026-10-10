@@ -35,13 +35,13 @@ public class BshSyntaxHighlighter extends SyntaxHighlighterBase {
     );
 
     private static final TokenSet KEYWORDS = TokenSet.create(
-            BshTypes.KEYWORD_BREAK, BshTypes.KEYWORD_CASE, BshTypes.KEYWORD_CONST,
-            BshTypes.KEYWORD_CONTINUE, BshTypes.KEYWORD_DEFAULT, BshTypes.KEYWORD_DISCARD,
-            BshTypes.KEYWORD_DO, BshTypes.KEYWORD_ELSE, BshTypes.KEYWORD_FOR,
-            BshTypes.KEYWORD_IF, BshTypes.KEYWORD_IN, BshTypes.KEYWORD_LAYOUT,
-            BshTypes.KEYWORD_OUT, BshTypes.KEYWORD_RETURN, BshTypes.KEYWORD_STRUCT,
-            BshTypes.KEYWORD_SWITCH, BshTypes.KEYWORD_UNIFORM, BshTypes.KEYWORD_WHILE,
-            BshTypes.BOOL_TRUE, BshTypes.BOOL_FALSE
+            BshTypes.KEYWORD_BREAK, BshTypes.KEYWORD_BUFFER, BshTypes.KEYWORD_CASE,
+            BshTypes.KEYWORD_CONST, BshTypes.KEYWORD_CONTINUE, BshTypes.KEYWORD_DEFAULT,
+            BshTypes.KEYWORD_DISCARD, BshTypes.KEYWORD_DO, BshTypes.KEYWORD_ELSE,
+            BshTypes.KEYWORD_FOR, BshTypes.KEYWORD_IF, BshTypes.KEYWORD_IN,
+            BshTypes.KEYWORD_LAYOUT, BshTypes.KEYWORD_OUT, BshTypes.KEYWORD_RETURN,
+            BshTypes.KEYWORD_STRUCT, BshTypes.KEYWORD_SWITCH, BshTypes.KEYWORD_UNIFORM,
+            BshTypes.KEYWORD_WHILE, BshTypes.BOOL_TRUE, BshTypes.BOOL_FALSE
     );
 
     private static final TokenSet TYPES = TokenSet.create(
@@ -61,7 +61,11 @@ public class BshSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TokenSet OPERATORS = TokenSet.create(
             BshTypes.EQ, BshTypes.NEQ, BshTypes.LE, BshTypes.GE, BshTypes.LT, BshTypes.GT,
             BshTypes.PLUS, BshTypes.MINUS, BshTypes.MUL, BshTypes.DIV, BshTypes.ASSIGN,
-            BshTypes.ADD_ASSIGN, BshTypes.SUB_ASSIGN, BshTypes.MUL_ASSIGN, BshTypes.DIV_ASSIGN
+            BshTypes.ADD_ASSIGN, BshTypes.SUB_ASSIGN, BshTypes.MUL_ASSIGN, BshTypes.DIV_ASSIGN,
+            BshTypes.MOD_ASSIGN, BshTypes.SHL_ASSIGN, BshTypes.SHR_ASSIGN,
+            BshTypes.AND_ASSIGN, BshTypes.OR_ASSIGN, BshTypes.XOR_ASSIGN,
+            BshTypes.INC, BshTypes.DEC, BshTypes.NOT, BshTypes.BIT_NOT,
+            BshTypes.BIT_AND, BshTypes.BIT_OR, BshTypes.BIT_XOR, BshTypes.SHL, BshTypes.SHR
     );
 
     @Override

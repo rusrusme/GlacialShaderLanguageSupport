@@ -12,11 +12,15 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import net.rusrusme.bsh.psi.BshPsiUtil;
+import net.rusrusme.bsh.psi.BshStructDeclaration;
+import net.rusrusme.bsh.psi.BshStructMember;
 import net.rusrusme.bsh.psi.BshVariableDeclaration;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.List;
 
 public class BshCompletionContributor extends CompletionContributor {
@@ -63,7 +67,12 @@ public class BshCompletionContributor extends CompletionContributor {
                 if (offset > 0 && text.charAt(offset - 1) == '.') {
                     String varName = getIdentifierBeforeDot(text, offset - 1);
                     String varType = resolveVariableType(position, varName);
-                    addTypeAwareMembers(result, varType);
+
+                    if (isBuiltinVectorType(varType)) {
+                        addTypeAwareMembers(result, varType);
+                    } else {
+                        addCustomStructMembers(result, position, varType);
+                    }
                     return;
                 }
 
@@ -152,20 +161,15 @@ public class BshCompletionContributor extends CompletionContributor {
                     result.addElement(LookupElementBuilder.create(keyword).bold());
                 }
 
-                List<BshVariableDeclaration> visibleVars = BshPsiUtil.findVisibleVariables(position);
+                List<BshPsiUtil.VisibleSymbol> visibleSymbols = BshPsiUtil.findVisibleSymbols(position);
 
-                for (BshVariableDeclaration var : visibleVars) {
-                    if (var.getIdentifier() != null) {
-                        String varName = var.getIdentifier().getText();
-                        String varType = var.getType() != null ? var.getType().getText() : "var";
+                for (BshPsiUtil.VisibleSymbol sym : visibleSymbols) {
+                    LookupElementBuilder element = LookupElementBuilder.create(sym.name())
+                            .withTypeText(sym.type(), true)
+                            .withIcon(com.intellij.icons.AllIcons.Nodes.Variable)
+                            .bold();
 
-                        LookupElementBuilder element = LookupElementBuilder.create(varName)
-                                .withTypeText(varType, true)
-                                .withIcon(com.intellij.icons.AllIcons.Nodes.Variable)
-                                .bold();
-
-                        result.addElement(PrioritizedLookupElement.withPriority(element, 150.0));
-                    }
+                    result.addElement(PrioritizedLookupElement.withPriority(element, 150.0));
                 }
             }
 
@@ -347,6 +351,36 @@ public class BshCompletionContributor extends CompletionContributor {
                             .bold()
                             .withIcon(com.intellij.icons.AllIcons.Nodes.Property);
                     result.addElement(PrioritizedLookupElement.withPriority(element, 300.0));
+                }
+            }
+
+            private boolean isBuiltinVectorType(String typeName) {
+                return typeName.endsWith("2") || typeName.endsWith("3") || typeName.endsWith("4");
+            }
+
+            private void addCustomStructMembers(CompletionResultSet result, PsiElement position, String structTypeName) {
+                if (position == null || position.getContainingFile() == null) return;
+
+                Collection<BshStructDeclaration> structs =
+                        PsiTreeUtil.findChildrenOfType(position.getContainingFile(), BshStructDeclaration.class);
+
+                for (BshStructDeclaration structDecl : structs) {
+                    if (structDecl.getIdentifier() != null && structTypeName.equals(structDecl.getIdentifier().getText())) {
+                        for (BshStructMember member : structDecl.getStructMemberList()) {
+                            if (member.getIdentifier() != null) {
+                                String fieldName = member.getIdentifier().getText();
+                                String fieldType = member.getType() != null ? member.getType().getText() : "var";
+
+                                LookupElementBuilder element = LookupElementBuilder.create(fieldName)
+                                        .withTypeText(fieldType, true)
+                                        .withIcon(com.intellij.icons.AllIcons.Nodes.Field)
+                                        .bold();
+
+                                result.addElement(PrioritizedLookupElement.withPriority(element, 200.0));
+                            }
+                        }
+                        break;
+                    }
                 }
             }
         });

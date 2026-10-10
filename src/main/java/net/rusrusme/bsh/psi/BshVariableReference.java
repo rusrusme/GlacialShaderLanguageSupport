@@ -17,10 +17,10 @@ public class BshVariableReference extends PsiReferenceBase<PsiElement> implement
 
     @Override
     public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
-        List<BshVariableDeclaration> vars = BshPsiUtil.findVisibleVariables(getElement());
-        for (BshVariableDeclaration var : vars) {
-            if (var.getIdentifier() != null && key.equals(var.getIdentifier().getText())) {
-                return new ResolveResult[]{new PsiElementResolveResult(var.getIdentifier())};
+        List<BshPsiUtil.VisibleSymbol> symbols = BshPsiUtil.findVisibleSymbols(getElement());
+        for (BshPsiUtil.VisibleSymbol sym : symbols) {
+            if (key.equals(sym.name())) {
+                return new ResolveResult[]{new PsiElementResolveResult(sym.element())};
             }
         }
         return ResolveResult.EMPTY_ARRAY;
