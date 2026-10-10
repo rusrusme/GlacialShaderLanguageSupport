@@ -133,7 +133,7 @@ public class BshCompletionContributor extends CompletionContributor {
 
                 // Standard Keywords
                 String[] simpleKeywords = {
-                        "else", "do", "return", "break", "continue", "discard", "uniform", "in", "out",
+                        "else", "do", "return", "break", "continue", "discard", "uniform", "in", "out", "buffer",
                         "void", "float", "int", "uint", "bool", "double", "once",
                         "vec2", "vec3", "vec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4", "bvec2", "bvec3", "bvec4",
                         "mat2", "mat3", "mat4", "sampler2D", "samplerCube", "image2D",

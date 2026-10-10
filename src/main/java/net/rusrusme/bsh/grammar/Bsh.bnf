@@ -30,6 +30,7 @@
     // Keywords
     KEYWORD_BREAK="break"
     KEYWORD_CASE="case"
+    KEYWORD_BUFFER="buffer"
     KEYWORD_CONST="const"
     KEYWORD_CONTINUE="continue"
     KEYWORD_DEFAULT="default"
@@ -147,7 +148,7 @@
 }
 
 bshFile ::= top_level_item_*
-private top_level_item_ ::= preprocessor_directive | struct_declaration | function_definition | global_variable_declaration | COMMENT
+private top_level_item_ ::= preprocessor_directive | interface_block | struct_declaration | function_definition | global_variable_declaration | COMMENT
 
 preprocessor_directive ::=
     DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
@@ -171,6 +172,9 @@ layout_param ::= IDENTIFIER (ASSIGN (NUMBER | IDENTIFIER))?
 
 variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON {pin=2}
 private array_suffix ::= LBRACK NUMBER? RBRACK
+
+interface_block ::= layout_qualifier? interface_qualifier IDENTIFIER LBRACE struct_member* RBRACE IDENTIFIER? SEMICOLON? {pin=3}
+private interface_qualifier ::= KEYWORD_UNIFORM | KEYWORD_BUFFER | KEYWORD_IN | KEYWORD_OUT
 
 function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement? {pin=2}
 private parameter_list ::= parameter (COMMA parameter)*

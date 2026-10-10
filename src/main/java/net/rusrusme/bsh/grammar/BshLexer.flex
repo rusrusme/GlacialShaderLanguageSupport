@@ -47,6 +47,7 @@ STRING_LITERAL=\"[^\"]*\"
 
   /* Keywords */
   "break"               { return BshTypes.KEYWORD_BREAK; }
+  "buffer"              { return BshTypes.KEYWORD_BUFFER; }
   "case"                { return BshTypes.KEYWORD_CASE; }
   "const"               { return BshTypes.KEYWORD_CONST; }
   "continue"            { return BshTypes.KEYWORD_CONTINUE; }
