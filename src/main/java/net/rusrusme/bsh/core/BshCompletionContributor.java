@@ -189,30 +189,40 @@ public class BshCompletionContributor extends CompletionContributor {
             }
 
             private void addTypeAwareMembers(CompletionResultSet result, String varType) {
-                int dimension = 4;
+                // 1. Skalare (float, int, double, bool) besitzen KEINE Swizzles
+                if (!varType.endsWith("2") && !varType.endsWith("3") && !varType.endsWith("4")) {
+                    return;
+                }
+
+                // Dimension aus dem Typ-Namen lesen (2, 3 oder 4)
+                int dimension = Character.getNumericValue(varType.charAt(varType.length() - 1));
+
                 String baseScalar = "float";
+                String vecPrefix = "vec";
 
-                if (varType.endsWith("2")) {
-                    dimension = 2;
-                }
-                else if (varType.endsWith("3")) {
-                    dimension = 3;
-                }
-                else if (varType.endsWith("4")) dimension = 4;
-
+                // Präfixe für alle GLSL-Vektortypen auflösen
                 if (varType.startsWith("i")) {
                     baseScalar = "int";
+                    vecPrefix = "ivec";
                 }
                 else if (varType.startsWith("u")) {
                     baseScalar = "uint";
+                    vecPrefix = "uvec";
                 }
-                else if (varType.startsWith("b")) baseScalar = "bool";
+                else if (varType.startsWith("b")) {
+                    baseScalar = "bool";
+                    vecPrefix = "bvec";
+                }
+                else if (varType.startsWith("d")) {
+                    baseScalar = "double";
+                    vecPrefix = "dvec";
+                }
 
-                String retVec2 = varType.startsWith("v") || varType.startsWith("m") ? "vec2" : baseScalar + "2";
-                String retVec3 = varType.startsWith("v") || varType.startsWith("m") ? "vec3" : baseScalar + "3";
-                String retVec4 = varType.startsWith("v") || varType.startsWith("m") ? "vec4" : baseScalar + "4";
+                String retVec2 = vecPrefix + "2";
+                String retVec3 = vecPrefix + "3";
+                String retVec4 = vecPrefix + "4";
 
-                // 1. Position / Spatial: x, y, z, w
+                // 2. Position / Spatial: x, y, z, w
                 char[] spatial = {'x', 'y', 'z', 'w'};
                 for (int i = 0; i < dimension; i++) {
                     result.addElement(LookupElementBuilder.create(String.valueOf(spatial[i]))
@@ -220,7 +230,7 @@ public class BshCompletionContributor extends CompletionContributor {
                             .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
                 }
 
-                // 2. Color: r, g, b, a
+                // 3. Color: r, g, b, a
                 char[] color = {'r', 'g', 'b', 'a'};
                 for (int i = 0; i < dimension; i++) {
                     result.addElement(LookupElementBuilder.create(String.valueOf(color[i]))
@@ -228,7 +238,7 @@ public class BshCompletionContributor extends CompletionContributor {
                             .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
                 }
 
-                // 3. Texture: s, t, p, q
+                // 4. Texture: s, t, p, q
                 char[] tex = {'s', 't', 'p', 'q'};
                 for (int i = 0; i < dimension; i++) {
                     result.addElement(LookupElementBuilder.create(String.valueOf(tex[i]))
@@ -236,7 +246,7 @@ public class BshCompletionContributor extends CompletionContributor {
                             .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
                 }
 
-                // 4. 2D Swizzles (xy, yz, xz ...)
+                // 5. 2D Swizzles (xy, yz, xz ...)
                 if (dimension >= 2) {
                     String[] common2 = {"xy", "yz", "xz", "yx", "rg", "gb", "rb", "st"};
                     for (String s : common2) {
@@ -248,7 +258,7 @@ public class BshCompletionContributor extends CompletionContributor {
                     }
                 }
 
-                // 5. 3D Swizzles (xyz, xzy, yxz ...)
+                // 6. 3D Swizzles (xyz, xzy, yxz ...)
                 if (dimension >= 3) {
                     String[] common3 = {"xyz", "xzy", "yxz", "zyx", "rgb", "bgr", "stp"};
                     for (String s : common3) {
@@ -260,7 +270,7 @@ public class BshCompletionContributor extends CompletionContributor {
                     }
                 }
 
-                // 6. 4D Swizzles
+                // 7. 4D Swizzles
                 if (dimension == 4) {
                     String[] common4 = {"xyzw", "rgba", "stpq"};
                     for (String s : common4) {
@@ -270,7 +280,7 @@ public class BshCompletionContributor extends CompletionContributor {
                     }
                 }
 
-                // 7. Methoden ganz unten
+                // 8. Vektor-Methoden
                 result.addElement(LookupElementBuilder.create("length()")
                         .withTypeText("int")
                         .bold());
