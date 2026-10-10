@@ -14,6 +14,9 @@ import org.jetbrains.annotations.NotNull;
 import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey;
 
 public class BshSyntaxHighlighter extends SyntaxHighlighterBase {
+
+    // Text Attributes Keys
+
     public static final TextAttributesKey KEYWORD =
             createTextAttributesKey("BSH_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
     public static final TextAttributesKey PREPROCESSOR =
@@ -22,10 +25,14 @@ public class BshSyntaxHighlighter extends SyntaxHighlighterBase {
             createTextAttributesKey("BSH_TYPE", DefaultLanguageHighlighterColors.KEYWORD);
     public static final TextAttributesKey NUMBER =
             createTextAttributesKey("BSH_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
+    public static final TextAttributesKey STRING =
+            createTextAttributesKey("BSH_STRING", DefaultLanguageHighlighterColors.STRING);
     public static final TextAttributesKey OPERATION_SIGN =
             createTextAttributesKey("BSH_OPERATION_SIGN", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey COMMENT =
             createTextAttributesKey("BSH_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
+
+    // Token Sets
 
     private static final TokenSet DIRECTIVES = TokenSet.create(
             BshTypes.DIRECTIVE_COMP, BshTypes.DIRECTIVE_DEFINE, BshTypes.DIRECTIVE_ENDIF,
@@ -76,23 +83,26 @@ public class BshSyntaxHighlighter extends SyntaxHighlighterBase {
     @Override
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
         if (DIRECTIVES.contains(tokenType)) {
-            return new TextAttributesKey[]{PREPROCESSOR};
+            return pack(PREPROCESSOR);
         }
-        else if (KEYWORDS.contains(tokenType)) {
-            return new TextAttributesKey[]{KEYWORD};
+        if (KEYWORDS.contains(tokenType)) {
+            return pack(KEYWORD);
         }
-        else if (TYPES.contains(tokenType)) {
-            return new TextAttributesKey[]{TYPE};
+        if (TYPES.contains(tokenType)) {
+            return pack(TYPE);
         }
-        else if (OPERATORS.contains(tokenType)) {
-            return new TextAttributesKey[]{OPERATION_SIGN};
+        if (OPERATORS.contains(tokenType)) {
+            return pack(OPERATION_SIGN);
         }
-        else if (tokenType.equals(BshTypes.NUMBER)) {
-            return new TextAttributesKey[]{NUMBER};
+        if (tokenType.equals(BshTypes.NUMBER)) {
+            return pack(NUMBER);
         }
-        else if (tokenType.equals(BshTypes.COMMENT)) {
-            return new TextAttributesKey[]{COMMENT};
+        if (tokenType.equals(BshTypes.STRING_LITERAL)) {
+            return pack(STRING);
         }
-        return new TextAttributesKey[0];
+        if (tokenType.equals(BshTypes.COMMENT)) {
+            return pack(COMMENT);
+        }
+        return EMPTY;
     }
 }

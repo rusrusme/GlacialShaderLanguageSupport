@@ -1,5 +1,5 @@
 {
-parserClass="net.rusrusme.bsh.parser.BshParser"
+  parserClass="net.rusrusme.bsh.parser.BshParser"
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
   psiClassPrefix="Bsh"
@@ -148,7 +148,7 @@ parserClass="net.rusrusme.bsh.parser.BshParser"
 }
 
 bshFile ::= top_level_item_*
-private top_level_item_ ::= preprocessor_directive | interface_block | struct_declaration | function_definition | global_variable_declaration | COMMENT
+private top_level_item_ ::= preprocessor_directive | interface_block | struct_declaration | function_definition | global_variable_declaration | SEMICOLON | COMMENT
 
 preprocessor_directive ::=
     DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
@@ -204,6 +204,7 @@ statement ::=
   | break_statement
   | continue_statement
   | discard_statement
+  | SEMICOLON
   | COMMENT
 
 expression_statement ::= expr SEMICOLON {pin=1}
@@ -245,24 +246,17 @@ private add_op ::= PLUS | MINUS
 multiplicative_expr ::= unary_expr (mul_op unary_expr)*
 private mul_op ::= MUL | DIV | MOD
 
-unary_expr ::= (prefix_op)* primary_expr (postfix_op)*
+unary_expr ::= prefix_expr | postfix_expr
+private prefix_expr ::= prefix_op unary_expr
 private prefix_op ::= INC | DEC | PLUS | MINUS | NOT | BIT_NOT
-private postfix_op ::= INC | DEC
 
-primary_expr ::=
-    constructor_or_call
-  | member_access
-  | array_access
-  | IDENTIFIER
-  | NUMBER
-  | BOOL_TRUE
-  | BOOL_FALSE
-  | LPAREN expr RPAREN
+postfix_expr ::= primary_expr (member_access | array_access | call_expression | INC | DEC)*
 
-constructor_or_call ::= (IDENTIFIER | type) LPAREN argument_list? RPAREN {pin=2}
-private argument_list ::= expr (COMMA expr)*
-member_access ::= IDENTIFIER (DOT IDENTIFIER)+
-array_access ::= IDENTIFIER LBRACK expr RBRACK
+member_access ::= DOT IDENTIFIER {pin=1}
+array_access ::= LBRACK expr RBRACK {pin=1}
+call_expression ::= LPAREN argument_list? RPAREN {pin=1}
+
+// --- Types & Primary Expressions ---
 
 type ::= TYPE_VOID | TYPE_FLOAT | TYPE_INT | TYPE_UINT | TYPE_BOOL | TYPE_DOUBLE
        | TYPE_VEC2 | TYPE_VEC3 | TYPE_VEC4
@@ -276,3 +270,14 @@ type ::= TYPE_VOID | TYPE_FLOAT | TYPE_INT | TYPE_UINT | TYPE_BOOL | TYPE_DOUBLE
        | TYPE_SAMPLER2DARRAY | TYPE_SAMPLER2DSHADOW | TYPE_ISAMPLER2D | TYPE_USAMPLER2D
        | TYPE_IMAGE2D
        | IDENTIFIER
+
+primary_expr ::=
+    type LPAREN argument_list? RPAREN
+  | IDENTIFIER
+  | NUMBER
+  | BOOL_TRUE
+  | BOOL_FALSE
+  | STRING_LITERAL
+  | LPAREN expr RPAREN
+
+private argument_list ::= expr (COMMA expr)*
