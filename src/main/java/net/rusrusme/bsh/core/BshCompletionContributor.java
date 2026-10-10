@@ -1,21 +1,31 @@
 package net.rusrusme.bsh.core;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.template.Template;
+import com.intellij.codeInsight.template.TemplateManager;
+import com.intellij.codeInsight.template.impl.ConstantNode;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 public class BshCompletionContributor extends CompletionContributor {
     public BshCompletionContributor() {
-        InsertHandler<com.intellij.codeInsight.lookup.LookupElement> parensInsertHandler = (context, item) -> {
+        InsertHandler<LookupElement> parensInsertHandler = (context, item) -> {
             Editor editor = context.getEditor();
-            int offset = context.getTailOffset();
+            Project project = context.getProject();
 
-            editor.getDocument().insertString(offset, " ()");
-            editor.getCaretModel().moveToOffset(offset + 2);
+            // Create a Live Template session for " ($EXPR$) $END$"
+            TemplateManager templateManager = TemplateManager.getInstance(project);
+            Template template = templateManager.createTemplate("", "", " ($EXPR$)$END$");
+            template.addVariable("EXPR", new ConstantNode(""), true);
+
+            // Start the template session
+            templateManager.startTemplate(editor, template);
         };
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {

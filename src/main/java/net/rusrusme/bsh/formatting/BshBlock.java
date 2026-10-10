@@ -68,7 +68,6 @@ public class BshBlock extends AbstractBlock {
             }
             return Indent.getNormalIndent();
         }
-
         return Indent.getNoneIndent();
     }
 
