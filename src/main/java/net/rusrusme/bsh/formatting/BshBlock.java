@@ -26,7 +26,8 @@ public class BshBlock extends AbstractBlock {
         ASTNode child = myNode.getFirstChildNode();
         while (child != null) {
             if (child.getElementType() != TokenType.WHITE_SPACE) {
-                blocks.add(new BshBlock(child, Wrap.createWrap(WrapType.NONE, false), Alignment.createAlignment(), spacingBuilder));
+                // Pass null for Alignment to prevent column-relative drifting
+                blocks.add(new BshBlock(child, Wrap.createWrap(WrapType.NONE, false), null, spacingBuilder));
             }
             child = child.getTreeNext();
         }
@@ -38,6 +39,7 @@ public class BshBlock extends AbstractBlock {
         IElementType type = myNode.getElementType();
 
         if (type == BshTypes.BLOCK_STATEMENT ||
+                type == BshTypes.STRUCT_DECLARATION ||
                 type == BshTypes.IF_STATEMENT ||
                 type == BshTypes.WHILE_STATEMENT ||
                 type == BshTypes.FOR_STATEMENT ||
@@ -51,14 +53,16 @@ public class BshBlock extends AbstractBlock {
 
     @Override
     public @Nullable Indent getIndent() {
-        IElementType elementType = myNode.getElementType();
-        IElementType parentType = myNode.getTreeParent() == null ? null : myNode.getTreeParent().getElementType();
-
-        if (parentType == null) {
+        ASTNode parentNode = myNode.getTreeParent();
+        if (parentNode == null) {
             return Indent.getNoneIndent();
         }
 
-        if (parentType == BshTypes.BLOCK_STATEMENT) {
+        IElementType elementType = myNode.getElementType();
+        IElementType parentType = parentNode.getElementType();
+
+        // Apply normal indent to elements inside {...} blocks and struct bodies
+        if (parentType == BshTypes.BLOCK_STATEMENT || parentType == BshTypes.STRUCT_DECLARATION) {
             if (elementType == BshTypes.LBRACE || elementType == BshTypes.RBRACE) {
                 return Indent.getNoneIndent();
             }

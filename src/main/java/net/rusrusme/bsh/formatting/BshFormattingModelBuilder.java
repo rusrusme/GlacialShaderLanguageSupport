@@ -12,6 +12,7 @@ public class BshFormattingModelBuilder implements FormattingModelBuilder {
                 .after(BshTypes.KEYWORD_IF).spaces(1)
                 .after(BshTypes.KEYWORD_WHILE).spaces(1)
                 .after(BshTypes.KEYWORD_FOR).spaces(1)
+                .after(BshTypes.KEYWORD_ELSE).spaces(1)
                 .before(BshTypes.LBRACE).spaces(1);
     }
 
@@ -21,7 +22,7 @@ public class BshFormattingModelBuilder implements FormattingModelBuilder {
         BshBlock block = new BshBlock(
                 formattingContext.getNode(),
                 Wrap.createWrap(WrapType.NONE, false),
-                Alignment.createAlignment(),
+                null, // Root alignment set to null
                 createSpaceBuilder(settings)
         );
         return FormattingModelProvider.createFormattingModelForPsiFile(
