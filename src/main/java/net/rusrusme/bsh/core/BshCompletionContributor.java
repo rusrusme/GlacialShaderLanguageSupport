@@ -12,9 +12,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
-import net.rusrusme.bsh.psi.BshLayoutQualifier;
 import net.rusrusme.bsh.psi.BshPsiUtil;
 import net.rusrusme.bsh.psi.BshVariableDeclaration;
 import org.jetbrains.annotations.NotNull;
@@ -61,15 +59,20 @@ public class BshCompletionContributor extends CompletionContributor {
                 CharSequence text = document.getCharsSequence();
                 PsiElement position = parameters.getPosition();
 
-                // 1. Swizzle/Member-Completion nach einem Punkt (.)
+                // 1. Swizzle/Member-Completion nach Punkt (.)
                 if (offset > 0 && text.charAt(offset - 1) == '.') {
                     addVectorAndMatrixMembers(result);
                     return;
                 }
 
-                // 2. Parameter-Completion INNERHALB von layout(...)
-                if (isInsideLayout(position, text, offset)) {
+                // 2. Layout-Parameter Schlüsselwörter NUR vorschlagen, wenn wir VOR dem '=' stehen
+                if (isInsideLayoutKeyContext(text, offset)) {
                     addLayoutParamCompletions(result);
+                    return;
+                }
+
+                // Wenn wir hinter '=' in layout(...) stehen, normale Keyword-Vorschläge unterdrücken
+                if (isInsideLayoutValueContext(text, offset)) {
                     return;
                 }
 
@@ -163,18 +166,44 @@ public class BshCompletionContributor extends CompletionContributor {
                 }
             }
 
-            private boolean isInsideLayout(PsiElement position, CharSequence text, int offset) {
-                if (PsiTreeUtil.getParentOfType(position, BshLayoutQualifier.class) != null) {
-                    return true;
-                }
+            // Prüft, ob wir den SCHLÜSSELNAMEN (z.B. location =) vorschlagen sollen
+            private boolean isInsideLayoutKeyContext(CharSequence text, int offset) {
                 int lineStart = Math.max(0, offset - 100);
                 String beforeCaret = text.subSequence(lineStart, offset).toString();
                 int lastLayout = beforeCaret.lastIndexOf("layout");
-                if (lastLayout != -1) {
-                    String afterLayout = beforeCaret.substring(lastLayout);
-                    return afterLayout.contains("(") && !afterLayout.contains(")");
-                }
-                return false;
+                if (lastLayout == -1) return false;
+
+                String afterLayout = beforeCaret.substring(lastLayout);
+                if (!afterLayout.contains("(") || afterLayout.contains(")")) return false;
+
+                int openParen = afterLayout.indexOf('(');
+                String insideParens = afterLayout.substring(openParen + 1);
+
+                // Den Bereich nach dem letzten Komma betrachten
+                int lastComma = insideParens.lastIndexOf(',');
+                String currentSegment = (lastComma != -1) ? insideParens.substring(lastComma + 1) : insideParens;
+
+                // Wenn bereits ein '=' getippt wurde, sind wir beim WERT, nicht beim SCHLÜSSEL
+                return !currentSegment.contains("=");
+            }
+
+            // Prüft, ob wir in layout(...) hinter einem '=' stehen (Wert-Kontext)
+            private boolean isInsideLayoutValueContext(CharSequence text, int offset) {
+                int lineStart = Math.max(0, offset - 100);
+                String beforeCaret = text.subSequence(lineStart, offset).toString();
+                int lastLayout = beforeCaret.lastIndexOf("layout");
+                if (lastLayout == -1) return false;
+
+                String afterLayout = beforeCaret.substring(lastLayout);
+                if (!afterLayout.contains("(") || afterLayout.contains(")")) return false;
+
+                int openParen = afterLayout.indexOf('(');
+                String insideParens = afterLayout.substring(openParen + 1);
+
+                int lastComma = insideParens.lastIndexOf(',');
+                String currentSegment = (lastComma != -1) ? insideParens.substring(lastComma + 1) : insideParens;
+
+                return currentSegment.contains("=");
             }
 
             private void addLayoutParamCompletions(CompletionResultSet result) {
