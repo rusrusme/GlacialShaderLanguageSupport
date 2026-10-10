@@ -59,9 +59,11 @@ public class BshCompletionContributor extends CompletionContributor {
                 CharSequence text = document.getCharsSequence();
                 PsiElement position = parameters.getPosition();
 
-                // 1. Swizzle/Member-Completion nach Punkt (.)
+                // 1. Typsichere Swizzle/Member-Completion nach Punkt (.)
                 if (offset > 0 && text.charAt(offset - 1) == '.') {
-                    addVectorAndMatrixMembers(result);
+                    String varName = getIdentifierBeforeDot(text, offset - 1);
+                    String varType = resolveVariableType(position, varName);
+                    addTypeAwareMembers(result, varType);
                     return;
                 }
 
@@ -82,7 +84,8 @@ public class BshCompletionContributor extends CompletionContributor {
                     if (Character.isJavaIdentifierPart(c) || c == '#') {
                         start--;
                         if (c == '#') break;
-                    } else {
+                    }
+                    else {
                         break;
                     }
                 }
@@ -166,7 +169,127 @@ public class BshCompletionContributor extends CompletionContributor {
                 }
             }
 
-            // Prüft, ob wir den SCHLÜSSELNAMEN (z.B. location =) vorschlagen sollen
+            private String getIdentifierBeforeDot(CharSequence text, int dotOffset) {
+                int start = dotOffset;
+                while (start > 0 && Character.isJavaIdentifierPart(text.charAt(start - 1))) {
+                    start--;
+                }
+                return text.subSequence(start, dotOffset).toString().trim();
+            }
+
+            private String resolveVariableType(PsiElement position, String varName) {
+                if (varName.isEmpty()) return "vec4"; // Default Fallback
+                List<BshVariableDeclaration> visibleVars = BshPsiUtil.findVisibleVariables(position);
+                for (BshVariableDeclaration var : visibleVars) {
+                    if (var.getIdentifier() != null && varName.equals(var.getIdentifier().getText())) {
+                        return var.getType() != null ? var.getType().getText() : "vec4";
+                    }
+                }
+                return "vec4";
+            }
+
+            private void addTypeAwareMembers(CompletionResultSet result, String varType) {
+                int dimension = 4;
+                String baseScalar = "float";
+
+                if (varType.endsWith("2")) {
+                    dimension = 2;
+                }
+                else if (varType.endsWith("3")) {
+                    dimension = 3;
+                }
+                else if (varType.endsWith("4")) dimension = 4;
+
+                if (varType.startsWith("i")) {
+                    baseScalar = "int";
+                }
+                else if (varType.startsWith("u")) {
+                    baseScalar = "uint";
+                }
+                else if (varType.startsWith("b")) baseScalar = "bool";
+
+                String retVec2 = varType.startsWith("v") || varType.startsWith("m") ? "vec2" : baseScalar + "2";
+                String retVec3 = varType.startsWith("v") || varType.startsWith("m") ? "vec3" : baseScalar + "3";
+                String retVec4 = varType.startsWith("v") || varType.startsWith("m") ? "vec4" : baseScalar + "4";
+
+                // 1. Position / Spatial: x, y, z, w
+                char[] spatial = {'x', 'y', 'z', 'w'};
+                for (int i = 0; i < dimension; i++) {
+                    result.addElement(LookupElementBuilder.create(String.valueOf(spatial[i]))
+                            .withTypeText(baseScalar)
+                            .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
+                }
+
+                // 2. Color: r, g, b, a
+                char[] color = {'r', 'g', 'b', 'a'};
+                for (int i = 0; i < dimension; i++) {
+                    result.addElement(LookupElementBuilder.create(String.valueOf(color[i]))
+                            .withTypeText(baseScalar)
+                            .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
+                }
+
+                // 3. Texture: s, t, p, q
+                char[] tex = {'s', 't', 'p', 'q'};
+                for (int i = 0; i < dimension; i++) {
+                    result.addElement(LookupElementBuilder.create(String.valueOf(tex[i]))
+                            .withTypeText(baseScalar)
+                            .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
+                }
+
+                // 4. 2D Swizzles (xy, yz, xz ...)
+                if (dimension >= 2) {
+                    String[] common2 = {"xy", "yz", "xz", "yx", "rg", "gb", "rb", "st"};
+                    for (String s : common2) {
+                        if (isValidSwizzleForDim(s, dimension)) {
+                            result.addElement(LookupElementBuilder.create(s)
+                                    .withTypeText(retVec2)
+                                    .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
+                        }
+                    }
+                }
+
+                // 5. 3D Swizzles (xyz, xzy, yxz ...)
+                if (dimension >= 3) {
+                    String[] common3 = {"xyz", "xzy", "yxz", "zyx", "rgb", "bgr", "stp"};
+                    for (String s : common3) {
+                        if (isValidSwizzleForDim(s, dimension)) {
+                            result.addElement(LookupElementBuilder.create(s)
+                                    .withTypeText(retVec3)
+                                    .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
+                        }
+                    }
+                }
+
+                // 6. 4D Swizzles
+                if (dimension == 4) {
+                    String[] common4 = {"xyzw", "rgba", "stpq"};
+                    for (String s : common4) {
+                        result.addElement(LookupElementBuilder.create(s)
+                                .withTypeText(retVec4)
+                                .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
+                    }
+                }
+
+                // 7. Methoden ganz unten
+                result.addElement(LookupElementBuilder.create("length()")
+                        .withTypeText("int")
+                        .bold());
+            }
+
+            private boolean isValidSwizzleForDim(String swizzle, int dim) {
+                String validSpatial = "xyzw".substring(0, dim);
+                String validColor = "rgba".substring(0, dim);
+                String validTex = "stpq".substring(0, dim);
+
+                boolean matchSpatial = true, matchColor = true, matchTex = true;
+                for (char c : swizzle.toCharArray()) {
+                    if (validSpatial.indexOf(c) == -1) matchSpatial = false;
+                    if (validColor.indexOf(c) == -1) matchColor = false;
+                    if (validTex.indexOf(c) == -1) matchTex = false;
+                }
+                return matchSpatial || matchColor || matchTex;
+            }
+
             private boolean isInsideLayoutKeyContext(CharSequence text, int offset) {
                 int lineStart = Math.max(0, offset - 100);
                 String beforeCaret = text.subSequence(lineStart, offset).toString();
@@ -179,15 +302,12 @@ public class BshCompletionContributor extends CompletionContributor {
                 int openParen = afterLayout.indexOf('(');
                 String insideParens = afterLayout.substring(openParen + 1);
 
-                // Den Bereich nach dem letzten Komma betrachten
                 int lastComma = insideParens.lastIndexOf(',');
                 String currentSegment = (lastComma != -1) ? insideParens.substring(lastComma + 1) : insideParens;
 
-                // Wenn bereits ein '=' getippt wurde, sind wir beim WERT, nicht beim SCHLÜSSEL
                 return !currentSegment.contains("=");
             }
 
-            // Prüft, ob wir in layout(...) hinter einem '=' stehen (Wert-Kontext)
             private boolean isInsideLayoutValueContext(CharSequence text, int offset) {
                 int lineStart = Math.max(0, offset - 100);
                 String beforeCaret = text.subSequence(lineStart, offset).toString();
@@ -217,26 +337,6 @@ public class BshCompletionContributor extends CompletionContributor {
                             .bold()
                             .withIcon(com.intellij.icons.AllIcons.Nodes.Property);
                     result.addElement(PrioritizedLookupElement.withPriority(element, 300.0));
-                }
-            }
-
-            private void addVectorAndMatrixMembers(CompletionResultSet result) {
-                result.addElement(LookupElementBuilder.create("length()")
-                        .withTypeText("int")
-                        .bold());
-
-                String[] swizzles = {
-                        "x", "y", "z", "w",
-                        "r", "g", "b", "a",
-                        "s", "t", "p", "q",
-                        "xy", "xyz", "xyzw",
-                        "rgb", "rgba",
-                        "st", "stp"
-                };
-                for (String s : swizzles) {
-                    result.addElement(LookupElementBuilder.create(s)
-                            .withTypeText("float")
-                            .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
                 }
             }
         });
