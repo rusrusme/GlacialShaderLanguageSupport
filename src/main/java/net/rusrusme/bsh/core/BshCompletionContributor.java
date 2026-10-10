@@ -1,5 +1,6 @@
 package net.rusrusme.bsh.core;
 
+import com.intellij.codeInsight.AutoPopupController;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -22,6 +23,7 @@ import java.util.List;
 
 public class BshCompletionContributor extends CompletionContributor {
     public BshCompletionContributor() {
+        // Standard Live-Template Handler für if (), while () etc.
         InsertHandler<LookupElement> parensInsertHandler = (context, item) -> {
             Editor editor = context.getEditor();
             Project project = context.getProject();
@@ -31,6 +33,21 @@ public class BshCompletionContributor extends CompletionContributor {
             template.addVariable("EXPR", new ConstantNode(""), true);
 
             templateManager.startTemplate(editor, template);
+        };
+
+        // Spezieller Handler für layout(...)
+        InsertHandler<LookupElement> layoutInsertHandler = (context, item) -> {
+            Editor editor = context.getEditor();
+            Project project = context.getProject();
+
+            TemplateManager templateManager = TemplateManager.getInstance(project);
+            Template template = templateManager.createTemplate("", "", "($PARAM$)$END$");
+            template.addVariable("PARAM", new ConstantNode(""), true);
+
+            templateManager.startTemplate(editor, template);
+
+            // Blendet direkt das Popup mit (binding =, location =, etc.) auf
+            AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null);
         };
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
@@ -44,14 +61,16 @@ public class BshCompletionContributor extends CompletionContributor {
                 CharSequence text = document.getCharsSequence();
                 PsiElement position = parameters.getPosition();
 
+                // 1. Swizzle/Member-Completion nach einem Punkt (.)
                 if (offset > 0 && text.charAt(offset - 1) == '.') {
                     addVectorAndMatrixMembers(result);
-                    return; // Prevent suggesting keywords when typing after '.'
+                    return;
                 }
 
+                // 2. Parameter-Completion INNERHALB von layout(...)
                 if (isInsideLayout(position, text, offset)) {
                     addLayoutParamCompletions(result);
-                    return; // Verhindert Schlüsselwort-Salat innerhalb von layout(...)
+                    return;
                 }
 
                 int start = offset;
@@ -92,6 +111,14 @@ public class BshCompletionContributor extends CompletionContributor {
                     result.addElement(PrioritizedLookupElement.withPriority(element, 50.0));
                 }
 
+                // 3. Layout Vorschlag mit Klammer-Generierung
+                LookupElementBuilder layoutElement = LookupElementBuilder.create("layout")
+                        .bold()
+                        .withTailText(" ()", true)
+                        .withInsertHandler(layoutInsertHandler);
+                result.addElement(PrioritizedLookupElement.withPriority(layoutElement, 120.0));
+
+                // Control Flow Keywords mit ()
                 String[] statementsWithParens = {"if", "while", "for", "switch"};
                 for (String keyword : statementsWithParens) {
                     LookupElementBuilder element = LookupElementBuilder.create(keyword)
@@ -101,9 +128,9 @@ public class BshCompletionContributor extends CompletionContributor {
                     result.addElement(PrioritizedLookupElement.withPriority(element, 100.0));
                 }
 
-                // Standard Built-in Functions & Keywords
+                // Standard Keywords
                 String[] simpleKeywords = {
-                        "else", "do", "return", "break", "continue", "discard", "layout", "uniform", "in", "out",
+                        "else", "do", "return", "break", "continue", "discard", "uniform", "in", "out",
                         "void", "float", "int", "uint", "bool", "double", "once",
                         "vec2", "vec3", "vec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4", "bvec2", "bvec3", "bvec4",
                         "mat2", "mat3", "mat4", "sampler2D", "samplerCube", "image2D",
@@ -140,7 +167,6 @@ public class BshCompletionContributor extends CompletionContributor {
                 if (PsiTreeUtil.getParentOfType(position, BshLayoutQualifier.class) != null) {
                     return true;
                 }
-                // Text-Fallback für unvollständigen Code während des Tippens
                 int lineStart = Math.max(0, offset - 100);
                 String beforeCaret = text.subSequence(lineStart, offset).toString();
                 int lastLayout = beforeCaret.lastIndexOf("layout");
@@ -166,12 +192,10 @@ public class BshCompletionContributor extends CompletionContributor {
             }
 
             private void addVectorAndMatrixMembers(CompletionResultSet result) {
-                // Vector Member Methods
                 result.addElement(LookupElementBuilder.create("length()")
                         .withTypeText("int")
                         .bold());
 
-                // Common Vector Swizzles
                 String[] swizzles = {
                         "x", "y", "z", "w",
                         "r", "g", "b", "a",
