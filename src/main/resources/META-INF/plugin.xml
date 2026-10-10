@@ -37,6 +37,9 @@
                 language="BasisShader"
                 implementationClass="net.rusrusme.bsh.formatting.BshFormattingModelBuilder"/>
 
+        <langCodeStyleSettingsProvider
+                implementation="net.rusrusme.bsh.formatting.BshLanguageCodeStyleSettingsProvider"/>
+
         <completion.contributor
                 language="BasisShader"
                 implementationClass="net.rusrusme.bsh.core.BshCompletionContributor"/>
@@ -44,5 +47,16 @@
         <psi.referenceContributor
                 language="BasisShader"
                 implementation="net.rusrusme.bsh.psi.BshReferenceContributor"/>
+
+        <internalFileTemplate name="Basis Shader File"/>
     </extensions>
+
+    <actions>
+        <action id="Bsh.NewFile"
+                class="net.rusrusme.bsh.action.BshCreateFileAction"
+                text="Basis Shader File"
+                description="Create a new Basis Shader file">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
+        </action>
+    </actions>
 </idea-plugin>
