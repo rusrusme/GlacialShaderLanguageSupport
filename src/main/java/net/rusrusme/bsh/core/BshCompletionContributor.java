@@ -17,7 +17,6 @@ import com.intellij.util.ProcessingContext;
 import net.rusrusme.bsh.psi.BshPsiUtil;
 import net.rusrusme.bsh.psi.BshStructDeclaration;
 import net.rusrusme.bsh.psi.BshStructMember;
-import net.rusrusme.bsh.psi.BshVariableDeclaration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -47,8 +46,6 @@ public class BshCompletionContributor extends CompletionContributor {
             template.addVariable("PARAM", new ConstantNode(""), true);
 
             templateManager.startTemplate(editor, template);
-
-            // Blendet direkt das Popup mit (binding =, location =, etc.) auf
             AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null);
         };
 
@@ -70,19 +67,19 @@ public class BshCompletionContributor extends CompletionContributor {
 
                     if (isBuiltinVectorType(varType)) {
                         addTypeAwareMembers(result, varType);
-                    } else {
+                    }
+                    else if (!varType.isEmpty()) {
                         addCustomStructMembers(result, position, varType);
                     }
                     return;
                 }
 
-                // 2. Layout-Parameter Schlüsselwörter NUR vorschlagen, wenn wir VOR dem '=' stehen
+                // 2. Layout-Parameter Schlüsselwörter VOR dem '='
                 if (isInsideLayoutKeyContext(text, offset)) {
                     addLayoutParamCompletions(result);
                     return;
                 }
 
-                // Wenn wir hinter '=' in layout(...) stehen, normale Keyword-Vorschläge unterdrücken
                 if (isInsideLayoutValueContext(text, offset)) {
                     return;
                 }
@@ -126,14 +123,12 @@ public class BshCompletionContributor extends CompletionContributor {
                     result.addElement(PrioritizedLookupElement.withPriority(element, 50.0));
                 }
 
-                // 3. Layout Vorschlag mit Klammer-Generierung
                 LookupElementBuilder layoutElement = LookupElementBuilder.create("layout")
                         .bold()
                         .withTailText(" ()", true)
                         .withInsertHandler(layoutInsertHandler);
                 result.addElement(PrioritizedLookupElement.withPriority(layoutElement, 120.0));
 
-                // Control Flow Keywords mit ()
                 String[] statementsWithParens = {"if", "while", "for", "switch"};
                 for (String keyword : statementsWithParens) {
                     LookupElementBuilder element = LookupElementBuilder.create(keyword)
@@ -143,7 +138,6 @@ public class BshCompletionContributor extends CompletionContributor {
                     result.addElement(PrioritizedLookupElement.withPriority(element, 100.0));
                 }
 
-                // Standard Keywords
                 String[] simpleKeywords = {
                         "else", "do", "return", "break", "continue", "discard", "uniform", "in", "out", "buffer",
                         "void", "float", "int", "uint", "bool", "double", "once",
@@ -161,8 +155,8 @@ public class BshCompletionContributor extends CompletionContributor {
                     result.addElement(LookupElementBuilder.create(keyword).bold());
                 }
 
+                // 3. Dynamisch deklarierte Variablen, Parameter & Buffer-Member
                 List<BshPsiUtil.VisibleSymbol> visibleSymbols = BshPsiUtil.findVisibleSymbols(position);
-
                 for (BshPsiUtil.VisibleSymbol sym : visibleSymbols) {
                     LookupElementBuilder element = LookupElementBuilder.create(sym.name())
                             .withTypeText(sym.type(), true)
@@ -170,6 +164,24 @@ public class BshCompletionContributor extends CompletionContributor {
                             .bold();
 
                     result.addElement(PrioritizedLookupElement.withPriority(element, 150.0));
+                }
+
+                // 4. Custom Struct-Namen als Typ-Vorschläge anbieten (z.B. PointLight)
+                if (position.getContainingFile() != null) {
+                    Collection<BshStructDeclaration> structs =
+                            PsiTreeUtil.findChildrenOfType(position.getContainingFile(), BshStructDeclaration.class);
+
+                    for (BshStructDeclaration structDecl : structs) {
+                        if (structDecl.getIdentifier() != null) {
+                            String structName = structDecl.getIdentifier().getText();
+                            LookupElementBuilder element = LookupElementBuilder.create(structName)
+                                    .withTypeText("struct", true)
+                                    .withIcon(com.intellij.icons.AllIcons.Nodes.Class)
+                                    .bold();
+
+                            result.addElement(PrioritizedLookupElement.withPriority(element, 160.0));
+                        }
+                    }
                 }
             }
 
@@ -182,29 +194,26 @@ public class BshCompletionContributor extends CompletionContributor {
             }
 
             private String resolveVariableType(PsiElement position, String varName) {
-                if (varName.isEmpty()) return "vec4"; // Default Fallback
-                List<BshVariableDeclaration> visibleVars = BshPsiUtil.findVisibleVariables(position);
-                for (BshVariableDeclaration var : visibleVars) {
-                    if (var.getIdentifier() != null && varName.equals(var.getIdentifier().getText())) {
-                        return var.getType() != null ? var.getType().getText() : "vec4";
+                if (varName.isEmpty()) return "";
+                List<BshPsiUtil.VisibleSymbol> visibleSymbols = BshPsiUtil.findVisibleSymbols(position);
+                for (BshPsiUtil.VisibleSymbol sym : visibleSymbols) {
+                    if (varName.equals(sym.name())) {
+                        return sym.type();
                     }
                 }
-                return "vec4";
+                return "";
             }
 
             private void addTypeAwareMembers(CompletionResultSet result, String varType) {
-                // 1. Skalare (float, int, double, bool) besitzen KEINE Swizzles
                 if (!varType.endsWith("2") && !varType.endsWith("3") && !varType.endsWith("4")) {
                     return;
                 }
 
-                // Dimension aus dem Typ-Namen lesen (2, 3 oder 4)
                 int dimension = Character.getNumericValue(varType.charAt(varType.length() - 1));
 
                 String baseScalar = "float";
                 String vecPrefix = "vec";
 
-                // Präfixe für alle GLSL-Vektortypen auflösen
                 if (varType.startsWith("i")) {
                     baseScalar = "int";
                     vecPrefix = "ivec";
@@ -226,7 +235,6 @@ public class BshCompletionContributor extends CompletionContributor {
                 String retVec3 = vecPrefix + "3";
                 String retVec4 = vecPrefix + "4";
 
-                // 2. Position / Spatial: x, y, z, w
                 char[] spatial = {'x', 'y', 'z', 'w'};
                 for (int i = 0; i < dimension; i++) {
                     result.addElement(LookupElementBuilder.create(String.valueOf(spatial[i]))
@@ -234,7 +242,6 @@ public class BshCompletionContributor extends CompletionContributor {
                             .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
                 }
 
-                // 3. Color: r, g, b, a
                 char[] color = {'r', 'g', 'b', 'a'};
                 for (int i = 0; i < dimension; i++) {
                     result.addElement(LookupElementBuilder.create(String.valueOf(color[i]))
@@ -242,7 +249,6 @@ public class BshCompletionContributor extends CompletionContributor {
                             .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
                 }
 
-                // 4. Texture: s, t, p, q
                 char[] tex = {'s', 't', 'p', 'q'};
                 for (int i = 0; i < dimension; i++) {
                     result.addElement(LookupElementBuilder.create(String.valueOf(tex[i]))
@@ -250,7 +256,6 @@ public class BshCompletionContributor extends CompletionContributor {
                             .withIcon(com.intellij.icons.AllIcons.Nodes.Field));
                 }
 
-                // 5. 2D Swizzles (xy, yz, xz ...)
                 if (dimension >= 2) {
                     String[] common2 = {"xy", "yz", "xz", "yx", "rg", "gb", "rb", "st"};
                     for (String s : common2) {
@@ -262,7 +267,6 @@ public class BshCompletionContributor extends CompletionContributor {
                     }
                 }
 
-                // 6. 3D Swizzles (xyz, xzy, yxz ...)
                 if (dimension >= 3) {
                     String[] common3 = {"xyz", "xzy", "yxz", "zyx", "rgb", "bgr", "stp"};
                     for (String s : common3) {
@@ -274,7 +278,6 @@ public class BshCompletionContributor extends CompletionContributor {
                     }
                 }
 
-                // 7. 4D Swizzles
                 if (dimension == 4) {
                     String[] common4 = {"xyzw", "rgba", "stpq"};
                     for (String s : common4) {
@@ -284,7 +287,6 @@ public class BshCompletionContributor extends CompletionContributor {
                     }
                 }
 
-                // 8. Vektor-Methoden
                 result.addElement(LookupElementBuilder.create("length()")
                         .withTypeText("int")
                         .bold());
