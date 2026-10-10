@@ -26,7 +26,7 @@ public class BshLanguageCodeStyleSettingsProvider extends LanguageCodeStyleSetti
         return """
                 #vert
                 #pragma once
-
+                
                 void main() {
                 
                 }

@@ -37,7 +37,8 @@ public abstract class BshNamedElementImpl extends ASTWrapperPsiElement implement
             if (this instanceof BshVariableDeclaration) {
                 var dummy = BshElementFactory.createVariableDeclaration(getProject(), newName);
                 if (dummy != null) newId = dummy.getIdentifier();
-            } else if (this instanceof BshStructDeclaration) {
+            }
+            else if (this instanceof BshStructDeclaration) {
                 var dummy = BshElementFactory.createStructDeclaration(getProject(), newName);
                 if (dummy != null) newId = dummy.getIdentifier();
             }
