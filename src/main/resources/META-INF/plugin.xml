@@ -21,6 +21,14 @@
                 language="BasisShader"
                 implementationClass="net.rusrusme.bsh.highlight.BshSyntaxHighlighterFactory"/>
 
+        <lang.commenter
+                language="BasisShader"
+                implementationClass="net.rusrusme.bsh.core.BshCommenter"/>
+
+        <annotator
+                language="BasisShader"
+                implementationClass="net.rusrusme.bsh.annotator.BshAnnotator"/>
+
         <lang.braceMatcher
                 language="BasisShader"
                 implementationClass="net.rusrusme.bsh.core.BshBraceMatcher"/>
@@ -32,7 +40,7 @@
         <completion.contributor
                 language="BasisShader"
                 implementationClass="net.rusrusme.bsh.core.BshCompletionContributor"/>
-        
+
         <psi.referenceContributor
                 language="BasisShader"
                 implementation="net.rusrusme.bsh.psi.BshReferenceContributor"/>
