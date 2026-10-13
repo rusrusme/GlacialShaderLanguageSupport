@@ -148,7 +148,9 @@
 }
 
 bshFile ::= top_level_item_*
-private top_level_item_ ::= preprocessor_directive | interface_block | struct_declaration | function_definition | global_variable_declaration | SEMICOLON | COMMENT
+private top_level_item_ ::= preprocessor_directive | interface_block | struct_declaration | function_definition | layout_declaration | global_variable_declaration | SEMICOLON | COMMENT
+
+layout_declaration ::= layout_qualifier (KEYWORD_IN | KEYWORD_OUT | KEYWORD_UNIFORM)? SEMICOLON {pin="SEMICOLON"}
 
 preprocessor_directive ::=
     DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
@@ -165,7 +167,7 @@ struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SE
   mixin="net.rusrusme.bsh.psi.impl.BshNamedElementImpl"
   implements="com.intellij.psi.PsiNameIdentifierOwner"
 }
-struct_member ::= type IDENTIFIER SEMICOLON {pin=2}
+struct_member ::= type IDENTIFIER array_suffix? SEMICOLON {pin=2}
 
 global_variable_declaration ::= layout_qualifier? variable_modifier? variable_declaration
 private variable_modifier ::= KEYWORD_UNIFORM | KEYWORD_IN | KEYWORD_OUT | KEYWORD_CONST
@@ -179,9 +181,9 @@ variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON 
   mixin="net.rusrusme.bsh.psi.impl.BshNamedElementImpl"
   implements="com.intellij.psi.PsiNameIdentifierOwner"
 }
-private array_suffix ::= LBRACK NUMBER? RBRACK
+private array_suffix ::= (LBRACK expr? RBRACK)+
 
-interface_block ::= layout_qualifier? interface_qualifier IDENTIFIER LBRACE struct_member* RBRACE IDENTIFIER? SEMICOLON? {pin=3}
+interface_block ::= layout_qualifier? interface_qualifier IDENTIFIER? LBRACE struct_member* RBRACE IDENTIFIER? SEMICOLON? {pin="LBRACE"}
 private interface_qualifier ::= KEYWORD_UNIFORM | KEYWORD_BUFFER | KEYWORD_IN | KEYWORD_OUT
 
 function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement? {pin=2}
@@ -210,7 +212,8 @@ statement ::=
 expression_statement ::= expr SEMICOLON {pin=1}
 if_statement ::= KEYWORD_IF LPAREN expr? RPAREN statement? (KEYWORD_ELSE statement?)? {pin=1}
 while_statement ::= KEYWORD_WHILE LPAREN expr? RPAREN statement? {pin=1}
-for_statement ::= KEYWORD_FOR LPAREN (variable_declaration | expression_statement)? expr? SEMICOLON expr? RPAREN statement? {pin=1}
+private for_init ::= variable_declaration | expression_statement | SEMICOLON
+for_statement ::= KEYWORD_FOR LPAREN for_init expr? SEMICOLON expr? RPAREN statement? {pin=1}
 return_statement ::= KEYWORD_RETURN expr? SEMICOLON {pin=1}
 break_statement ::= KEYWORD_BREAK SEMICOLON {pin=1}
 continue_statement ::= KEYWORD_CONTINUE SEMICOLON {pin=1}
@@ -272,7 +275,7 @@ type ::= TYPE_VOID | TYPE_FLOAT | TYPE_INT | TYPE_UINT | TYPE_BOOL | TYPE_DOUBLE
        | IDENTIFIER
 
 primary_expr ::=
-    type LPAREN argument_list? RPAREN
+    type array_suffix? LPAREN argument_list? RPAREN
   | IDENTIFIER
   | NUMBER
   | BOOL_TRUE

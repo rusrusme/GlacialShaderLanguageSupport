@@ -20,7 +20,7 @@ WHITE_SPACE=[\ \t\r\n]+
 LINE_COMMENT="//"[^\r\n]*
 BLOCK_COMMENT="/"\*([^*]|\*+[^/*])*\*+"/"
 IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_]*
-NUMBER=[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?[fF]?
+NUMBER=(0[xX][0-9a-fA-F]+[uU]?)|(([0-9]+\.[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?[fF]?)|([0-9]+([eE][+-]?[0-9]+)?[fFuU]?)
 STRING_LITERAL=\"[^\"]*\"
 
 %%
