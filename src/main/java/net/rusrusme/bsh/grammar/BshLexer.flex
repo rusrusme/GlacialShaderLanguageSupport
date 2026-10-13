@@ -155,6 +155,13 @@ STRING_LITERAL=\"[^\"]*\"
   "["                   { return BshTypes.LBRACK; }
   "]"                   { return BshTypes.RBRACK; }
 
+  /* Storage / Memory Qualifiers */
+  "readonly"            { return BshTypes.KEYWORD_READONLY; }
+  "writeonly"           { return BshTypes.KEYWORD_WRITEONLY; }
+  "coherent"            { return BshTypes.KEYWORD_COHERENT; }
+  "volatile"            { return BshTypes.KEYWORD_VOLATILE; }
+  "restrict"            { return BshTypes.KEYWORD_RESTRICT; }
+
   {NUMBER}              { return BshTypes.NUMBER; }
   {IDENTIFIER}          { return BshTypes.IDENTIFIER; }
 }

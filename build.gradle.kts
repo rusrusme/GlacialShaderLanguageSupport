@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "net.rusrusme.bsh"
-version = "1.0-SNAPSHOT"
+version = "0.0.2"
 
 repositories {
     mavenCentral()

@@ -144,6 +144,13 @@
     RPAREN=")"
     LBRACK="["
     RBRACK="]"
+
+    // Storage / Memory Qualifiers
+    KEYWORD_READONLY="readonly"
+    KEYWORD_WRITEONLY="writeonly"
+    KEYWORD_COHERENT="coherent"
+    KEYWORD_VOLATILE="volatile"
+    KEYWORD_RESTRICT="restrict"
   ]
 }
 
@@ -169,8 +176,17 @@ struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SE
 }
 struct_member ::= type IDENTIFIER array_suffix? SEMICOLON {pin=2}
 
-global_variable_declaration ::= layout_qualifier? variable_modifier? variable_declaration
-private variable_modifier ::= KEYWORD_UNIFORM | KEYWORD_IN | KEYWORD_OUT | KEYWORD_CONST
+global_variable_declaration ::= layout_qualifier? variable_modifier* variable_declaration
+private variable_modifier ::=
+    KEYWORD_UNIFORM
+  | KEYWORD_IN
+  | KEYWORD_OUT
+  | KEYWORD_CONST
+  | KEYWORD_READONLY
+  | KEYWORD_WRITEONLY
+  | KEYWORD_COHERENT
+  | KEYWORD_VOLATILE
+  | KEYWORD_RESTRICT
 
 layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN {pin=1}
 private layout_params ::= layout_param (COMMA layout_param)*
