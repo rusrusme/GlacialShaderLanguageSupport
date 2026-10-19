@@ -43,7 +43,11 @@ STRING_LITERAL=\"[^\"]*\"
   "#define"             { return BshTypes.DIRECTIVE_DEFINE; }
   "#ifdef"              { return BshTypes.DIRECTIVE_IFDEF; }
   "#ifndef"             { return BshTypes.DIRECTIVE_IFNDEF; }
+  "#if"                 { return BshTypes.DIRECTIVE_IF; }
+  "#elif"               { return BshTypes.DIRECTIVE_ELIF; }
+  "#else"               { return BshTypes.DIRECTIVE_ELSE; }
   "#endif"              { return BshTypes.DIRECTIVE_ENDIF; }
+  "defined"             { return BshTypes.KEYWORD_DEFINED; }
 
   /* Keywords */
   "break"               { return BshTypes.KEYWORD_BREAK; }

@@ -25,6 +25,10 @@
     DIRECTIVE_PRAGMA="#pragma"
     DIRECTIVE_VERSION="#version"
     DIRECTIVE_VERT="#vert"
+    DIRECTIVE_IF="#if"
+    DIRECTIVE_ELSE="#else"
+    DIRECTIVE_ELIF="#elif"
+    KEYWORD_DEFINED="defined"
     KEYWORD_ONCE="once"
 
     // Keywords
@@ -167,6 +171,9 @@ preprocessor_directive ::=
   | DIRECTIVE_DEFINE IDENTIFIER expr?
   | DIRECTIVE_IFDEF IDENTIFIER
   | DIRECTIVE_IFNDEF IDENTIFIER
+  | DIRECTIVE_IF expr?
+  | DIRECTIVE_ELIF expr?
+  | DIRECTIVE_ELSE
   | DIRECTIVE_ENDIF
 
 struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON {
@@ -176,17 +183,20 @@ struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SE
 }
 struct_member ::= type IDENTIFIER array_suffix? SEMICOLON {pin=2}
 
+private memory_qualifier ::=
+    KEYWORD_READONLY
+  | KEYWORD_WRITEONLY
+  | KEYWORD_COHERENT
+  | KEYWORD_VOLATILE
+  | KEYWORD_RESTRICT
+
 global_variable_declaration ::= layout_qualifier? variable_modifier* variable_declaration
 private variable_modifier ::=
     KEYWORD_UNIFORM
   | KEYWORD_IN
   | KEYWORD_OUT
   | KEYWORD_CONST
-  | KEYWORD_READONLY
-  | KEYWORD_WRITEONLY
-  | KEYWORD_COHERENT
-  | KEYWORD_VOLATILE
-  | KEYWORD_RESTRICT
+  | memory_qualifier
 
 layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN {pin=1}
 private layout_params ::= layout_param (COMMA layout_param)*
@@ -199,7 +209,7 @@ variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON 
 }
 private array_suffix ::= (LBRACK expr? RBRACK)+
 
-interface_block ::= layout_qualifier? interface_qualifier IDENTIFIER? LBRACE struct_member* RBRACE IDENTIFIER? SEMICOLON? {pin="LBRACE"}
+interface_block ::= layout_qualifier? memory_qualifier* interface_qualifier IDENTIFIER? LBRACE struct_member* RBRACE IDENTIFIER? SEMICOLON? {pin="LBRACE"}
 private interface_qualifier ::= KEYWORD_UNIFORM | KEYWORD_BUFFER | KEYWORD_IN | KEYWORD_OUT
 
 function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement? {pin=2}
@@ -291,7 +301,9 @@ type ::= TYPE_VOID | TYPE_FLOAT | TYPE_INT | TYPE_UINT | TYPE_BOOL | TYPE_DOUBLE
        | IDENTIFIER
 
 primary_expr ::=
-    type array_suffix? LPAREN argument_list? RPAREN
+    KEYWORD_DEFINED LPAREN IDENTIFIER RPAREN
+  | KEYWORD_DEFINED IDENTIFIER
+  | type array_suffix? LPAREN argument_list? RPAREN
   | IDENTIFIER
   | NUMBER
   | BOOL_TRUE

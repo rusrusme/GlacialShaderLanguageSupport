@@ -37,8 +37,10 @@ public class BshSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TokenSet DIRECTIVES = TokenSet.create(
             BshTypes.DIRECTIVE_COMP, BshTypes.DIRECTIVE_DEFINE, BshTypes.DIRECTIVE_ENDIF,
             BshTypes.DIRECTIVE_FRAG, BshTypes.DIRECTIVE_GEOM, BshTypes.DIRECTIVE_IFDEF,
-            BshTypes.DIRECTIVE_IFNDEF, BshTypes.DIRECTIVE_INCLUDE, BshTypes.DIRECTIVE_PRAGMA,
-            BshTypes.KEYWORD_ONCE, BshTypes.DIRECTIVE_VERSION, BshTypes.DIRECTIVE_VERT
+            BshTypes.DIRECTIVE_IFNDEF, BshTypes.DIRECTIVE_IF, BshTypes.DIRECTIVE_ELIF,
+            BshTypes.DIRECTIVE_ELSE, BshTypes.DIRECTIVE_INCLUDE, BshTypes.DIRECTIVE_PRAGMA,
+            BshTypes.KEYWORD_ONCE, BshTypes.KEYWORD_DEFINED, BshTypes.DIRECTIVE_VERSION,
+            BshTypes.DIRECTIVE_VERT
     );
 
     private static final TokenSet KEYWORDS = TokenSet.create(
@@ -48,7 +50,9 @@ public class BshSyntaxHighlighter extends SyntaxHighlighterBase {
             BshTypes.KEYWORD_FOR, BshTypes.KEYWORD_IF, BshTypes.KEYWORD_IN,
             BshTypes.KEYWORD_LAYOUT, BshTypes.KEYWORD_OUT, BshTypes.KEYWORD_RETURN,
             BshTypes.KEYWORD_STRUCT, BshTypes.KEYWORD_SWITCH, BshTypes.KEYWORD_UNIFORM,
-            BshTypes.KEYWORD_WHILE, BshTypes.BOOL_TRUE, BshTypes.BOOL_FALSE
+            BshTypes.KEYWORD_WHILE, BshTypes.BOOL_TRUE, BshTypes.BOOL_FALSE,
+            BshTypes.KEYWORD_READONLY, BshTypes.KEYWORD_WRITEONLY, BshTypes.KEYWORD_COHERENT,
+            BshTypes.KEYWORD_VOLATILE, BshTypes.KEYWORD_RESTRICT
     );
 
     private static final TokenSet TYPES = TokenSet.create(
