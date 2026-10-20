@@ -18,19 +18,19 @@ public class GSyntaxHighlighter extends SyntaxHighlighterBase {
     // Text Attributes Keys
 
     public static final TextAttributesKey KEYWORD =
-            createTextAttributesKey("BSH_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
+            createTextAttributesKey("GSHADER_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
     public static final TextAttributesKey PREPROCESSOR =
-            createTextAttributesKey("BSH_PREPROCESSOR", DefaultLanguageHighlighterColors.METADATA);
+            createTextAttributesKey("GSHADER_PREPROCESSOR", DefaultLanguageHighlighterColors.METADATA);
     public static final TextAttributesKey TYPE =
-            createTextAttributesKey("BSH_TYPE", DefaultLanguageHighlighterColors.KEYWORD);
+            createTextAttributesKey("GSHADER_TYPE", DefaultLanguageHighlighterColors.KEYWORD);
     public static final TextAttributesKey NUMBER =
-            createTextAttributesKey("BSH_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
+            createTextAttributesKey("GSHADER_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
     public static final TextAttributesKey STRING =
-            createTextAttributesKey("BSH_STRING", DefaultLanguageHighlighterColors.STRING);
+            createTextAttributesKey("GSHADER_STRING", DefaultLanguageHighlighterColors.STRING);
     public static final TextAttributesKey OPERATION_SIGN =
-            createTextAttributesKey("BSH_OPERATION_SIGN", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+            createTextAttributesKey("GSHADER_OPERATION_SIGN", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey COMMENT =
-            createTextAttributesKey("BSH_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
+            createTextAttributesKey("GSHADER_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
 
     // Token Sets
 

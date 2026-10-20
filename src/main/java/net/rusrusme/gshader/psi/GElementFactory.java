@@ -27,6 +27,6 @@ public class GElementFactory {
 
     @NotNull
     private static GFile createFile(@NotNull Project project, @NotNull String text) {
-        return (GFile) PsiFileFactory.getInstance(project).createFileFromText("dummy.bsh", GFileType.INSTANCE, text);
+        return (GFile) PsiFileFactory.getInstance(project).createFileFromText("dummy.gshader", GFileType.INSTANCE, text);
     }
 }

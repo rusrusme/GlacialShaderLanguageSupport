@@ -12,9 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Custom Formatting Block for Basis Shader Language (BSH).
- */
 public class GBlock extends AbstractBlock {
 
     private final SpacingBuilder spacingBuilder;
