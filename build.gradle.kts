@@ -4,8 +4,8 @@ plugins {
     id("org.jetbrains.intellij.platform.grammarkit") version "2.19.0"
 }
 
-group = "net.rusrusme.bsh"
-version = "0.0.3"
+group = "net.rusrusme.gshader"
+version = "0.1.0"
 
 repositories {
     mavenCentral()
@@ -36,16 +36,16 @@ sourceSets {
 
 tasks {
     generateLexer {
-        sourceFile.set(file("src/main/java/net/rusrusme/bsh/grammar/BshLexer.flex"))
-        targetRootOutputDir.set(file("src/main/gen/net/rusrusme/bsh/lexer"))
+        sourceFile.set(file("src/main/java/net/rusrusme/gshader/grammar/GLexer.flex"))
+        targetRootOutputDir.set(file("src/main/gen/net/rusrusme/gshader/lexer"))
         purgeOldFiles.set(true)
     }
 
     generateParser {
-        sourceFile.set(file("src/main/java/net/rusrusme/bsh/grammar/Bsh.bnf"))
+        sourceFile.set(file("src/main/java/net/rusrusme/gshader/grammar/GShader.bnf"))
         targetRootOutputDir.set(file("src/main/gen"))
-        pathToParser.set("net/rusrusme/bsh/parser/BshParser.java")
-        pathToPsiRoot.set("net/rusrusme/bsh/psi")
+        pathToParser.set("net/rusrusme/gshader/parser/GParser.java")
+        pathToPsiRoot.set("net/rusrusme/gshader/psi")
         purgeOldFiles.set(true)
     }
 

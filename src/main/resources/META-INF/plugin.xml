@@ -1,61 +1,61 @@
 <idea-plugin>
-    <id>net.rusrusme.bsh</id>
-    <name>Basis Shader Language</name>
+    <id>net.rusrusme.gshader</id>
+    <name>Glacial Shader Language</name>
     <vendor>rusrusme</vendor>
 
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType
-                name="Basis Shader File"
-                implementationClass="net.rusrusme.bsh.core.BshFileType"
+                name="Glacial Shader File"
+                implementationClass="net.rusrusme.gshader.core.GFileType"
                 fieldName="INSTANCE"
-                language="BasisShader"
-                extensions="bsh"/>
+                language="GlacialShader"
+                extensions="gshader"/>
 
         <lang.parserDefinition
-                language="BasisShader"
-                implementationClass="net.rusrusme.bsh.core.BshParserDefinition"/>
+                language="GlacialShader"
+                implementationClass="net.rusrusme.gshader.core.GParserDefinition"/>
 
         <lang.syntaxHighlighterFactory
-                language="BasisShader"
-                implementationClass="net.rusrusme.bsh.highlight.BshSyntaxHighlighterFactory"/>
+                language="GlacialShader"
+                implementationClass="net.rusrusme.gshader.highlight.GSyntaxHighlighterFactory"/>
 
         <lang.commenter
-                language="BasisShader"
-                implementationClass="net.rusrusme.bsh.core.BshCommenter"/>
+                language="GlacialShader"
+                implementationClass="net.rusrusme.gshader.core.GCommenter"/>
 
         <annotator
-                language="BasisShader"
-                implementationClass="net.rusrusme.bsh.annotator.BshAnnotator"/>
+                language="GlacialShader"
+                implementationClass="net.rusrusme.gshader.annotator.GAnnotator"/>
 
         <lang.braceMatcher
-                language="BasisShader"
-                implementationClass="net.rusrusme.bsh.core.BshBraceMatcher"/>
+                language="GlacialShader"
+                implementationClass="net.rusrusme.gshader.core.GBraceMatcher"/>
 
         <lang.formatter
-                language="BasisShader"
-                implementationClass="net.rusrusme.bsh.formatting.BshFormattingModelBuilder"/>
+                language="GlacialShader"
+                implementationClass="net.rusrusme.gshader.formatting.GFormattingModelBuilder"/>
 
         <langCodeStyleSettingsProvider
-                implementation="net.rusrusme.bsh.formatting.BshLanguageCodeStyleSettingsProvider"/>
+                implementation="net.rusrusme.gshader.formatting.GLanguageCodeStyleSettingsProvider"/>
 
         <completion.contributor
-                language="BasisShader"
-                implementationClass="net.rusrusme.bsh.core.BshCompletionContributor"/>
+                language="GlacialShader"
+                implementationClass="net.rusrusme.gshader.core.GCompletionContributor"/>
 
         <psi.referenceContributor
-                language="BasisShader"
-                implementation="net.rusrusme.bsh.psi.BshReferenceContributor"/>
+                language="GlacialShader"
+                implementation="net.rusrusme.gshader.psi.GReferenceContributor"/>
 
-        <internalFileTemplate name="Basis Shader File"/>
+        <internalFileTemplate name="Glacial Shader File"/>
     </extensions>
 
     <actions>
-        <action id="Bsh.NewFile"
-                class="net.rusrusme.bsh.action.BshCreateFileAction"
-                text="Basis Shader File"
-                description="Create a new Basis Shader file">
+        <action id="GShader.NewFile"
+                class="net.rusrusme.gshader.action.GCreateFileAction"
+                text="Glacial Shader File"
+                description="Create a new Glacial Shader file">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
     </actions>

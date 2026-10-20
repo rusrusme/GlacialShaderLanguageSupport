@@ -1,1 +1,1 @@
-rootProject.name = "BasisShaderLanguageSupport"
+rootProject.name = "GlacialShaderLanguageSupport"
