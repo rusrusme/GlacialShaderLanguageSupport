@@ -1,0 +1,314 @@
+{
+  parserClass="net.rusrusme.gshader.parser.GParser"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="G"
+  psiImplClassSuffix="Impl"
+
+  psiPackage="net.rusrusme.gshader.psi"
+  psiImplPackage="net.rusrusme.gshader.psi.impl"
+
+  elementTypeHolderClass="net.rusrusme.gshader.psi.GTypes"
+  elementTypeClass="net.rusrusme.gshader.psi.GElementType"
+  tokenTypeClass="net.rusrusme.gshader.psi.GTokenType"
+
+  tokens=[
+    // Directives
+    DIRECTIVE_COMP="#comp"
+    DIRECTIVE_DEFINE="#define"
+    DIRECTIVE_ENDIF="#endif"
+    DIRECTIVE_FRAG="#frag"
+    DIRECTIVE_GEOM="#geom"
+    DIRECTIVE_IFDEF="#ifdef"
+    DIRECTIVE_IFNDEF="#ifndef"
+    DIRECTIVE_INCLUDE="#include"
+    DIRECTIVE_PRAGMA="#pragma"
+    DIRECTIVE_VERSION="#version"
+    DIRECTIVE_VERT="#vert"
+    DIRECTIVE_IF="#if"
+    DIRECTIVE_ELSE="#else"
+    DIRECTIVE_ELIF="#elif"
+    KEYWORD_DEFINED="defined"
+    KEYWORD_ONCE="once"
+
+    // Keywords
+    KEYWORD_BREAK="break"
+    KEYWORD_CASE="case"
+    KEYWORD_BUFFER="buffer"
+    KEYWORD_CONST="const"
+    KEYWORD_CONTINUE="continue"
+    KEYWORD_DEFAULT="default"
+    KEYWORD_DISCARD="discard"
+    KEYWORD_DO="do"
+    KEYWORD_ELSE="else"
+    KEYWORD_FOR="for"
+    KEYWORD_IF="if"
+    KEYWORD_IN="in"
+    KEYWORD_LAYOUT="layout"
+    KEYWORD_OUT="out"
+    KEYWORD_RETURN="return"
+    KEYWORD_STRUCT="struct"
+    KEYWORD_SWITCH="switch"
+    KEYWORD_UNIFORM="uniform"
+    KEYWORD_WHILE="while"
+
+    // Types
+    TYPE_BOOL="bool"
+    TYPE_BVEC2="bvec2"
+    TYPE_BVEC3="bvec3"
+    TYPE_BVEC4="bvec4"
+    TYPE_DMAT2="dmat2"
+    TYPE_DMAT3="dmat3"
+    TYPE_DMAT4="dmat4"
+    TYPE_DOUBLE="double"
+    TYPE_DVEC2="dvec2"
+    TYPE_DVEC3="dvec3"
+    TYPE_DVEC4="dvec4"
+    TYPE_FLOAT="float"
+    TYPE_IMAGE2D="image2D"
+    TYPE_INT="int"
+    TYPE_ISAMPLER2D="isampler2D"
+    TYPE_IVEC2="ivec2"
+    TYPE_IVEC3="ivec3"
+    TYPE_IVEC4="ivec4"
+    TYPE_MAT2="mat2"
+    TYPE_MAT3="mat3"
+    TYPE_MAT4="mat4"
+    TYPE_SAMPLER1D="sampler1D"
+    TYPE_SAMPLER2D="sampler2D"
+    TYPE_SAMPLER2DARRAY="sampler2DArray"
+    TYPE_SAMPLER2DSHADOW="sampler2DShadow"
+    TYPE_SAMPLER3D="sampler3D"
+    TYPE_SAMPLERCUBE="samplerCube"
+    TYPE_UINT="uint"
+    TYPE_USAMPLER2D="usampler2D"
+    TYPE_UVEC2="uvec2"
+    TYPE_UVEC3="uvec3"
+    TYPE_UVEC4="uvec4"
+    TYPE_VEC2="vec2"
+    TYPE_VEC3="vec3"
+    TYPE_VEC4="vec4"
+    TYPE_VOID="void"
+
+    // Literals
+    BOOL_TRUE="true"
+    BOOL_FALSE="false"
+    IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+
+    // Operators
+    EQ="=="
+    NEQ="!="
+    LE="<="
+    GE=">="
+    LT="<"
+    GT=">"
+    AND="&&"
+    OR="||"
+    NOT="!"
+
+    // Operators - Bitwise & Shift
+    BIT_AND="&"
+    BIT_OR="|"
+    BIT_XOR="^"
+    BIT_NOT="~"
+    SHL="<<"
+    SHR=">>"
+
+    // Operators - Arithmetic
+    PLUS="+"
+    MINUS="-"
+    MUL="*"
+    DIV="/"
+    MOD="%"
+    INC="++"
+    DEC="--"
+
+    // Operators - Assignment
+    ASSIGN="="
+    ADD_ASSIGN="+="
+    SUB_ASSIGN="-="
+    MUL_ASSIGN="*="
+    DIV_ASSIGN="/="
+    MOD_ASSIGN="%="
+    SHL_ASSIGN="<<="
+    SHR_ASSIGN=">>="
+    AND_ASSIGN="&="
+    OR_ASSIGN="|="
+    XOR_ASSIGN="^="
+
+    // Punctuation
+    SEMICOLON=";"
+    COMMA=","
+    DOT="."
+    COLON=":"
+    QUESTION="?"
+    LBRACE="{"
+    RBRACE="}"
+    LPAREN="("
+    RPAREN=")"
+    LBRACK="["
+    RBRACK="]"
+
+    // Storage / Memory Qualifiers
+    KEYWORD_READONLY="readonly"
+    KEYWORD_WRITEONLY="writeonly"
+    KEYWORD_COHERENT="coherent"
+    KEYWORD_VOLATILE="volatile"
+    KEYWORD_RESTRICT="restrict"
+  ]
+}
+
+gshaderFile ::= top_level_item_*
+private top_level_item_ ::= preprocessor_directive | interface_block | struct_declaration | function_definition | layout_declaration | global_variable_declaration | SEMICOLON | COMMENT
+
+layout_declaration ::= layout_qualifier (KEYWORD_IN | KEYWORD_OUT | KEYWORD_UNIFORM)? SEMICOLON {pin="SEMICOLON"}
+
+preprocessor_directive ::=
+    DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
+  | DIRECTIVE_INCLUDE STRING_LITERAL?
+  | DIRECTIVE_PRAGMA KEYWORD_ONCE?
+  | DIRECTIVE_VERSION NUMBER? IDENTIFIER?
+  | DIRECTIVE_DEFINE IDENTIFIER expr?
+  | DIRECTIVE_IFDEF IDENTIFIER
+  | DIRECTIVE_IFNDEF IDENTIFIER
+  | DIRECTIVE_IF expr?
+  | DIRECTIVE_ELIF expr?
+  | DIRECTIVE_ELSE
+  | DIRECTIVE_ENDIF
+
+struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON {
+  pin=1
+  mixin="net.rusrusme.gshader.psi.impl.GNamedElementImpl"
+  implements="com.intellij.psi.PsiNameIdentifierOwner"
+}
+struct_member ::= type IDENTIFIER array_suffix? SEMICOLON {pin=2}
+
+private memory_qualifier ::=
+    KEYWORD_READONLY
+  | KEYWORD_WRITEONLY
+  | KEYWORD_COHERENT
+  | KEYWORD_VOLATILE
+  | KEYWORD_RESTRICT
+
+global_variable_declaration ::= layout_qualifier? variable_modifier* variable_declaration
+private variable_modifier ::=
+    KEYWORD_UNIFORM
+  | KEYWORD_IN
+  | KEYWORD_OUT
+  | KEYWORD_CONST
+  | memory_qualifier
+
+layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN {pin=1}
+private layout_params ::= layout_param (COMMA layout_param)*
+layout_param ::= IDENTIFIER (ASSIGN (NUMBER | IDENTIFIER))?
+
+variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON {
+  pin=2
+  mixin="net.rusrusme.gshader.psi.impl.GNamedElementImpl"
+  implements="com.intellij.psi.PsiNameIdentifierOwner"
+}
+private array_suffix ::= (LBRACK expr? RBRACK)+
+
+interface_block ::= layout_qualifier? memory_qualifier* interface_qualifier IDENTIFIER? LBRACE struct_member* RBRACE IDENTIFIER? SEMICOLON? {pin="LBRACE"}
+private interface_qualifier ::= KEYWORD_UNIFORM | KEYWORD_BUFFER | KEYWORD_IN | KEYWORD_OUT
+
+function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement? {pin=2}
+private parameter_list ::= parameter (COMMA parameter)*
+parameter ::= parameter_modifier? type IDENTIFIER
+private parameter_modifier ::= KEYWORD_IN | KEYWORD_OUT | (KEYWORD_IN KEYWORD_OUT)
+
+block_statement ::= LBRACE statement_* RBRACE {pin=1}
+private statement_ ::= statement {recoverWhile=statement_recover}
+private statement_recover ::= !(RBRACE | SEMICOLON | type | KEYWORD_IF | KEYWORD_WHILE | KEYWORD_FOR | KEYWORD_RETURN | KEYWORD_BREAK | KEYWORD_CONTINUE | KEYWORD_DISCARD)
+
+statement ::=
+    block_statement
+  | variable_declaration
+  | expression_statement
+  | if_statement
+  | while_statement
+  | for_statement
+  | return_statement
+  | break_statement
+  | continue_statement
+  | discard_statement
+  | SEMICOLON
+  | COMMENT
+
+expression_statement ::= expr SEMICOLON {pin=1}
+if_statement ::= KEYWORD_IF LPAREN expr? RPAREN statement? (KEYWORD_ELSE statement?)? {pin=1}
+while_statement ::= KEYWORD_WHILE LPAREN expr? RPAREN statement? {pin=1}
+private for_init ::= variable_declaration | expression_statement | SEMICOLON
+for_statement ::= KEYWORD_FOR LPAREN for_init expr? SEMICOLON expr? RPAREN statement? {pin=1}
+return_statement ::= KEYWORD_RETURN expr? SEMICOLON {pin=1}
+break_statement ::= KEYWORD_BREAK SEMICOLON {pin=1}
+continue_statement ::= KEYWORD_CONTINUE SEMICOLON {pin=1}
+discard_statement ::= KEYWORD_DISCARD SEMICOLON {pin=1}
+
+// --- Expression Hierarchy ---
+expr ::= conditional_expr
+
+conditional_expr ::= assignment_expr (QUESTION expr COLON assignment_expr)?
+
+assignment_expr ::= logic_or_expr (assignment_op logic_or_expr)*
+private assignment_op ::= ASSIGN | ADD_ASSIGN | SUB_ASSIGN | MUL_ASSIGN | DIV_ASSIGN | MOD_ASSIGN | SHL_ASSIGN | SHR_ASSIGN | AND_ASSIGN | OR_ASSIGN | XOR_ASSIGN
+
+logic_or_expr ::= logic_and_expr (OR logic_and_expr)*
+logic_and_expr ::= bit_or_expr (AND bit_or_expr)*
+
+bit_or_expr ::= bit_xor_expr (BIT_OR bit_xor_expr)*
+bit_xor_expr ::= bit_and_expr (BIT_XOR bit_and_expr)*
+bit_and_expr ::= equality_expr (BIT_AND equality_expr)*
+
+equality_expr ::= relational_expr (eq_op relational_expr)*
+private eq_op ::= EQ | NEQ
+
+relational_expr ::= shift_expr (rel_op shift_expr)*
+private rel_op ::= LT | GT | LE | GE
+
+shift_expr ::= additive_expr (shift_op additive_expr)*
+private shift_op ::= SHL | SHR
+
+additive_expr ::= multiplicative_expr (add_op multiplicative_expr)*
+private add_op ::= PLUS | MINUS
+
+multiplicative_expr ::= unary_expr (mul_op unary_expr)*
+private mul_op ::= MUL | DIV | MOD
+
+unary_expr ::= prefix_expr | postfix_expr
+private prefix_expr ::= prefix_op unary_expr
+private prefix_op ::= INC | DEC | PLUS | MINUS | NOT | BIT_NOT
+
+postfix_expr ::= primary_expr (member_access | array_access | call_expression | INC | DEC)*
+
+member_access ::= DOT IDENTIFIER {pin=1}
+array_access ::= LBRACK expr RBRACK {pin=1}
+call_expression ::= LPAREN argument_list? RPAREN {pin=1}
+
+// --- Types & Primary Expressions ---
+
+type ::= TYPE_VOID | TYPE_FLOAT | TYPE_INT | TYPE_UINT | TYPE_BOOL | TYPE_DOUBLE
+       | TYPE_VEC2 | TYPE_VEC3 | TYPE_VEC4
+       | TYPE_IVEC2 | TYPE_IVEC3 | TYPE_IVEC4
+       | TYPE_UVEC2 | TYPE_UVEC3 | TYPE_UVEC4
+       | TYPE_BVEC2 | TYPE_BVEC3 | TYPE_BVEC4
+       | TYPE_DVEC2 | TYPE_DVEC3 | TYPE_DVEC4
+       | TYPE_MAT2 | TYPE_MAT3 | TYPE_MAT4
+       | TYPE_DMAT2 | TYPE_DMAT3 | TYPE_DMAT4
+       | TYPE_SAMPLER1D | TYPE_SAMPLER2D | TYPE_SAMPLER3D | TYPE_SAMPLERCUBE
+       | TYPE_SAMPLER2DARRAY | TYPE_SAMPLER2DSHADOW | TYPE_ISAMPLER2D | TYPE_USAMPLER2D
+       | TYPE_IMAGE2D
+       | IDENTIFIER
+
+primary_expr ::=
+    KEYWORD_DEFINED LPAREN IDENTIFIER RPAREN
+  | KEYWORD_DEFINED IDENTIFIER
+  | type array_suffix? LPAREN argument_list? RPAREN
+  | IDENTIFIER
+  | NUMBER
+  | BOOL_TRUE
+  | BOOL_FALSE
+  | STRING_LITERAL
+  | LPAREN expr RPAREN
+
+private argument_list ::= expr (COMMA expr)*
