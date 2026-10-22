@@ -47,6 +47,7 @@ STRING_LITERAL=\"[^\"]*\"
   "#elif"               { return GTypes.DIRECTIVE_ELIF; }
   "#else"               { return GTypes.DIRECTIVE_ELSE; }
   "#endif"              { return GTypes.DIRECTIVE_ENDIF; }
+  "#common"             { return GTypes.DIRECTIVE_COMMON; }
   "defined"             { return GTypes.KEYWORD_DEFINED; }
 
   /* Keywords */

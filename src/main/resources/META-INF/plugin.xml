@@ -1,7 +1,9 @@
 <idea-plugin>
     <id>net.rusrusme.gshader</id>
     <name>Glacial Shader Language</name>
-    <vendor>rusrusme</vendor>
+    <vendor url="https://github.com/rusrusme/GlacialShaderLanguageSupport"
+            email="ruslanmelikov.me@gmail.com">rusrusme
+    </vendor>
 
     <depends>com.intellij.modules.platform</depends>
 

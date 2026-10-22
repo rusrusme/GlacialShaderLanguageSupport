@@ -101,7 +101,8 @@ public class GCompletionContributor extends CompletionContributor {
                 String[] directives = {
                         "#frag", "#vert", "#geom", "#comp",
                         "#pragma once", "#include", "#version",
-                        "#define", "#ifdef", "#ifndef", "#endif"
+                        "#define", "#ifdef", "#ifndef", "#endif",
+                        "#common"
                 };
 
                 if (prefix.startsWith("#")) {

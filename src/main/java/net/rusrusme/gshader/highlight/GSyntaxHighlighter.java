@@ -40,7 +40,7 @@ public class GSyntaxHighlighter extends SyntaxHighlighterBase {
             GTypes.DIRECTIVE_IFNDEF, GTypes.DIRECTIVE_IF, GTypes.DIRECTIVE_ELIF,
             GTypes.DIRECTIVE_ELSE, GTypes.DIRECTIVE_INCLUDE, GTypes.DIRECTIVE_PRAGMA,
             GTypes.KEYWORD_ONCE, GTypes.KEYWORD_DEFINED, GTypes.DIRECTIVE_VERSION,
-            GTypes.DIRECTIVE_VERT
+            GTypes.DIRECTIVE_VERT, GTypes.DIRECTIVE_COMMON
     );
 
     private static final TokenSet KEYWORDS = TokenSet.create(

@@ -28,6 +28,7 @@
     DIRECTIVE_IF="#if"
     DIRECTIVE_ELSE="#else"
     DIRECTIVE_ELIF="#elif"
+    DIRECTIVE_COMMON="#common"
     KEYWORD_DEFINED="defined"
     KEYWORD_ONCE="once"
 
@@ -175,6 +176,7 @@ preprocessor_directive ::=
   | DIRECTIVE_ELIF expr?
   | DIRECTIVE_ELSE
   | DIRECTIVE_ENDIF
+  | DIRECTIVE_COMMON
 
 struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON {
   pin=1

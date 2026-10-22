@@ -4,8 +4,11 @@ plugins {
     id("org.jetbrains.intellij.platform.grammarkit") version "2.19.0"
 }
 
-group = "net.rusrusme.gshader"
-version = "0.1.2"
+val pluginVersion = providers.gradleProperty("pluginVersion")
+val pluginGroup = providers.gradleProperty("pluginGroup")
+
+group = pluginGroup.get()
+version = pluginVersion.get()
 
 repositories {
     mavenCentral()
@@ -51,5 +54,36 @@ tasks {
 
     compileJava {
         dependsOn(generateLexer, generateParser)
+    }
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        version = pluginVersion
+
+        description = provider {
+            """
+            <p>Provides syntax highlighting, lexing, and language support for Glacial Shader (<code>.gshader</code>) files in CLion.</p>
+            <h3>Features</h3>
+            <ul>
+                <li>Syntax highlighting for multi-stage shaders (<code>#vert</code>, <code>#frag</code>, <code>#comp</code>, <code>#geom</code>)</li>
+                <li>Lexing and AST parsing via Grammar-Kit</li>
+                <li>Code formatting, brace matching, and commenting</li>
+                <li>Code completion for GLSL types, layout qualifiers, and keywords</li>
+            </ul>
+            """.trimIndent()
+        }
+
+        changeNotes = pluginVersion.map { ver ->
+            """
+            <h3>$ver</h3>
+            <ul>
+                <li>Pre-Release</li>
+                <li>Syntax highlighting and lexing for <code>.gshader</code> files.</li>
+                <li>Code formatting, brace matching, and commenting support.</li>
+                <li>Keyword and type code completion.</li>
+            </ul>
+            """.trimIndent()
+        }
     }
 }
