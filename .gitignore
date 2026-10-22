@@ -3,6 +3,7 @@
 /build/
 /.intellijPlatform/
 /src/main/gen/
+/sandbox/
 
 *.iml
 /gen/
