@@ -160,7 +160,29 @@
 }
 
 gshaderFile ::= top_level_item_*
-private top_level_item_ ::= preprocessor_directive | interface_block | struct_declaration | function_definition | layout_declaration | global_variable_declaration | SEMICOLON | COMMENT
+
+private top_level_item_ ::= (
+    preprocessor_directive
+  | interface_block
+  | struct_declaration
+  | function_definition
+  | layout_declaration
+  | global_variable_declaration
+  | SEMICOLON
+  | COMMENT
+) {recoverWhile=top_level_recover}
+
+private top_level_recover ::= !(
+    DIRECTIVE_VERT | DIRECTIVE_FRAG | DIRECTIVE_GEOM | DIRECTIVE_COMP
+  | DIRECTIVE_INCLUDE | DIRECTIVE_PRAGMA | DIRECTIVE_VERSION
+  | DIRECTIVE_DEFINE | DIRECTIVE_IFDEF | DIRECTIVE_IFNDEF
+  | DIRECTIVE_IF | DIRECTIVE_ELIF | DIRECTIVE_ELSE | DIRECTIVE_ENDIF | DIRECTIVE_COMMON
+  | KEYWORD_STRUCT | KEYWORD_LAYOUT | KEYWORD_UNIFORM | KEYWORD_BUFFER
+  | KEYWORD_IN | KEYWORD_OUT | KEYWORD_CONST
+  | KEYWORD_READONLY | KEYWORD_WRITEONLY | KEYWORD_COHERENT | KEYWORD_VOLATILE | KEYWORD_RESTRICT
+  | type
+  | COMMENT
+)
 
 layout_declaration ::= layout_qualifier (KEYWORD_IN | KEYWORD_OUT | KEYWORD_UNIFORM)? SEMICOLON {pin="SEMICOLON"}
 
@@ -178,12 +200,17 @@ preprocessor_directive ::=
   | DIRECTIVE_ENDIF
   | DIRECTIVE_COMMON
 
-struct_declaration ::= KEYWORD_STRUCT IDENTIFIER LBRACE struct_member* RBRACE SEMICOLON {
+struct_declaration ::= KEYWORD_STRUCT struct_name member_block SEMICOLON {
   pin=1
   mixin="net.rusrusme.gshader.psi.impl.GNamedElementImpl"
   implements="com.intellij.psi.PsiNameIdentifierOwner"
 }
-struct_member ::= type IDENTIFIER array_suffix? SEMICOLON {pin=2}
+private struct_name ::= IDENTIFIER? {recoverWhile=interface_header_recover}
+
+private member_block ::= LBRACE struct_member_* RBRACE {pin=1}
+private struct_member_ ::= (struct_member | COMMENT) {recoverWhile=struct_member_recover}
+private struct_member_recover ::= !(RBRACE | type | COMMENT)
+struct_member ::= type IDENTIFIER array_suffix? SEMICOLON {pin=1}
 
 private memory_qualifier ::=
     KEYWORD_READONLY
@@ -210,8 +237,13 @@ variable_declaration ::= KEYWORD_CONST? type IDENTIFIER array_suffix? (ASSIGN ex
 }
 private array_suffix ::= (LBRACK expr? RBRACK)+
 
-interface_block ::= layout_qualifier? memory_qualifier* interface_qualifier IDENTIFIER? LBRACE struct_member* RBRACE IDENTIFIER? SEMICOLON? {pin="LBRACE"}
+interface_block ::= layout_qualifier? memory_qualifier* interface_qualifier interface_block_name? member_block IDENTIFIER? SEMICOLON? {
+  pin=3
+}
 private interface_qualifier ::= KEYWORD_UNIFORM | KEYWORD_BUFFER | KEYWORD_IN | KEYWORD_OUT
+
+private interface_block_name ::= IDENTIFIER? {recoverWhile=interface_header_recover}
+private interface_header_recover ::= !(LBRACE | SEMICOLON)
 
 function_definition ::= type IDENTIFIER LPAREN parameter_list? RPAREN block_statement? {pin=2}
 private parameter_list ::= parameter (COMMA parameter)*

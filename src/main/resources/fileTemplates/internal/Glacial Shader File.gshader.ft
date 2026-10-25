@@ -1,12 +1,12 @@
-#vert
 #pragma once
+
+#vert
 
 void main() {
 
 }
 
 #frag
-#pragma once
 
 void main() {
 
