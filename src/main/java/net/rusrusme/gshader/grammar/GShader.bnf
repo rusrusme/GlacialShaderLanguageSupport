@@ -197,15 +197,14 @@ private variable_modifier ::=
     KEYWORD_UNIFORM
   | KEYWORD_IN
   | KEYWORD_OUT
-  | KEYWORD_CONST
   | memory_qualifier
 
 layout_qualifier ::= KEYWORD_LAYOUT LPAREN layout_params? RPAREN {pin=1}
 private layout_params ::= layout_param (COMMA layout_param)*
 layout_param ::= IDENTIFIER (ASSIGN (NUMBER | IDENTIFIER))?
 
-variable_declaration ::= type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON {
-  pin=2
+variable_declaration ::= KEYWORD_CONST? type IDENTIFIER array_suffix? (ASSIGN expr)? SEMICOLON {
+  pin="IDENTIFIER"
   mixin="net.rusrusme.gshader.psi.impl.GNamedElementImpl"
   implements="com.intellij.psi.PsiNameIdentifierOwner"
 }
@@ -221,7 +220,7 @@ private parameter_modifier ::= KEYWORD_IN | KEYWORD_OUT | (KEYWORD_IN KEYWORD_OU
 
 block_statement ::= LBRACE statement_* RBRACE {pin=1}
 private statement_ ::= statement {recoverWhile=statement_recover}
-private statement_recover ::= !(RBRACE | SEMICOLON | type | KEYWORD_IF | KEYWORD_WHILE | KEYWORD_FOR | KEYWORD_RETURN | KEYWORD_BREAK | KEYWORD_CONTINUE | KEYWORD_DISCARD)
+private statement_recover ::= !(RBRACE | SEMICOLON | type | KEYWORD_CONST | KEYWORD_IF | KEYWORD_WHILE | KEYWORD_FOR | KEYWORD_RETURN | KEYWORD_BREAK | KEYWORD_CONTINUE | KEYWORD_DISCARD)
 
 statement ::=
     block_statement

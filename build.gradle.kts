@@ -58,6 +58,10 @@ tasks {
 }
 
 intellijPlatform {
+    publishing {
+        token = providers.gradleProperty("jetbrainsMarketplaceToken")
+    }
+
     pluginConfiguration {
         version = pluginVersion
 
