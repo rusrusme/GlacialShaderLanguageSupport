@@ -46,7 +46,7 @@ public class GCompletionContributor extends CompletionContributor {
             template.addVariable("PARAM", new ConstantNode(""), true);
 
             templateManager.startTemplate(editor, template);
-            AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null);
+            AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
         };
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
@@ -370,17 +370,15 @@ public class GCompletionContributor extends CompletionContributor {
                 for (GStructDeclaration structDecl : structs) {
                     if (structDecl.getIdentifier() != null && structTypeName.equals(structDecl.getIdentifier().getText())) {
                         for (GStructMember member : structDecl.getStructMemberList()) {
-                            if (member.getIdentifier() != null) {
-                                String fieldName = member.getIdentifier().getText();
-                                String fieldType = member.getType() != null ? member.getType().getText() : "var";
+                            String fieldName = member.getIdentifier().getText();
+                            String fieldType = member.getType().getText();
 
-                                LookupElementBuilder element = LookupElementBuilder.create(fieldName)
-                                        .withTypeText(fieldType, true)
-                                        .withIcon(com.intellij.icons.AllIcons.Nodes.Field)
-                                        .bold();
+                            LookupElementBuilder element = LookupElementBuilder.create(fieldName)
+                                    .withTypeText(fieldType, true)
+                                    .withIcon(com.intellij.icons.AllIcons.Nodes.Field)
+                                    .bold();
 
-                                result.addElement(PrioritizedLookupElement.withPriority(element, 200.0));
-                            }
+                            result.addElement(PrioritizedLookupElement.withPriority(element, 200.0));
                         }
                         break;
                     }

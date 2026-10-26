@@ -107,6 +107,6 @@ public class GSyntaxHighlighter extends SyntaxHighlighterBase {
         if (tokenType.equals(GTypes.COMMENT)) {
             return pack(COMMENT);
         }
-        return EMPTY;
+        return TextAttributesKey.EMPTY_ARRAY;
     }
 }

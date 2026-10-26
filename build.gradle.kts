@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        clion("2026.2.3")
+        clion("2026.2.4")
     }
 }
 
@@ -83,9 +83,10 @@ intellijPlatform {
             <h3>$ver</h3>
             <ul>
                 <li>Pre-Release</li>
-                <li>Syntax highlighting and lexing for <code>.gshader</code> files.</li>
-                <li>Code formatting, brace matching, and commenting support.</li>
+                <li>Replaced deprecated API usage.</li>
                 <li>Keyword and type code completion.</li>
+                <li>Updated parsing syntax errors.</li>
+                <li>Fixed formatting issue when syntax errors occur.</li>
             </ul>
             """.trimIndent()
         }

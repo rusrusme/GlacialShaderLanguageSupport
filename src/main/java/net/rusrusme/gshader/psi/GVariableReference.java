@@ -28,7 +28,7 @@ public class GVariableReference extends PsiReferenceBase<PsiElement> implements 
         // 2. Funktionen
         List<GFunctionDefinition> functions = GPsiUtil.findFunctions(getElement());
         for (GFunctionDefinition func : functions) {
-            if (func.getIdentifier() != null && key.equals(func.getIdentifier().getText())) {
+            if (key.equals(func.getIdentifier().getText())) {
                 return new ResolveResult[]{new PsiElementResolveResult(func.getIdentifier())};
             }
         }

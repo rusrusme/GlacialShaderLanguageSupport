@@ -37,23 +37,21 @@ public final class GPsiUtil {
         // 1. Lokale und globale Variablen vor der aktuellen Position
         Collection<GVariableDeclaration> declarations = PsiTreeUtil.findChildrenOfType(file, GVariableDeclaration.class);
         for (GVariableDeclaration decl : declarations) {
-            if (decl.getIdentifier() != null) {
-                int declOffset = decl.getTextOffset();
-                if (declOffset < caretOffset && !decl.getTextRange().containsOffset(caretOffset)) {
-                    String name = decl.getIdentifier().getText();
-                    String type = decl.getType() != null ? decl.getType().getText() : "var";
-                    symbols.add(new VisibleSymbol(name, type, decl.getIdentifier()));
-                }
+            int declOffset = decl.getTextOffset();
+            if (declOffset < caretOffset && !decl.getTextRange().containsOffset(caretOffset)) {
+                String name = decl.getIdentifier().getText();
+                String type = decl.getType().getText();
+                symbols.add(new VisibleSymbol(name, type, decl.getIdentifier()));
             }
         }
 
         // 2. Funktionsparameter der umschließenden Funktion
         GFunctionDefinition enclosingFunction = PsiTreeUtil.getParentOfType(element, GFunctionDefinition.class);
-        if (enclosingFunction != null && enclosingFunction.getParameterList() != null) {
+        if (enclosingFunction != null) {
             for (GParameter param : enclosingFunction.getParameterList()) {
                 if (param.getIdentifier() != null) {
                     String name = param.getIdentifier().getText();
-                    String type = param.getType() != null ? param.getType().getText() : "var";
+                    String type = param.getType().getText();
                     symbols.add(new VisibleSymbol(name, type, param.getIdentifier()));
                 }
             }
@@ -63,11 +61,9 @@ public final class GPsiUtil {
         Collection<GInterfaceBlock> interfaceBlocks = PsiTreeUtil.findChildrenOfType(file, GInterfaceBlock.class);
         for (GInterfaceBlock block : interfaceBlocks) {
             for (GStructMember member : block.getStructMemberList()) {
-                if (member.getIdentifier() != null) {
-                    String name = member.getIdentifier().getText();
-                    String type = member.getType() != null ? member.getType().getText() : "var";
-                    symbols.add(new VisibleSymbol(name, type, member.getIdentifier()));
-                }
+                String name = member.getIdentifier().getText();
+                String type = member.getType().getText();
+                symbols.add(new VisibleSymbol(name, type, member.getIdentifier()));
             }
         }
 
